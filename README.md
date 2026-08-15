@@ -178,7 +178,7 @@ git config --global core.autocrlf input
 ### Paso 1 — Clonar el repositorio
 
 ```bash
-git clone <URL-DEL-REPO> guardao
+git clone https://github.com/igrisdev/guardao.git
 cd guardao
 ```
 
@@ -298,31 +298,102 @@ pnpm lint        # ESLint
 
 ## 6. Flujo de trabajo con Git
 
-Ramas fijas:
+Repositorio: **https://github.com/igrisdev/guardao**
+
+Ramas fijas (protegidas, nadie hace push directo a ellas):
 
 - **`main`** — producción. Solo se toca por merge desde `develop`.
 - **`develop`** — integración. Es la rama de la que sale y a la que vuelve todo el trabajo del equipo.
 
-Ciclo de una tarea:
+**Rama personal de cada desarrollador.** Además de las dos fijas, cada quien trabaja en su propia rama con el prefijo **`dev_`** seguido de su nombre y apellido en minúsculas, separados por guion bajo:
+
+```
+dev_johan_alvarez
+dev_maria_ramirez
+```
+
+Sin tildes, sin espacios y sin mayúsculas. Cada quien usa siempre la misma rama, no una por tarea.
+
+Crear tu rama personal la primera vez, a partir de `develop`:
 
 ```bash
 git checkout develop
 git pull origin develop
 
-git checkout -b feature/nombre-de-la-tarea
+git checkout -b dev_johan_alvarez
+git push -u origin dev_johan_alvarez
+```
+
+Ciclo de trabajo del día a día:
+
+```bash
+git checkout dev_johan_alvarez
+
+# traes lo último del equipo a tu rama antes de empezar
+git fetch origin
+git merge origin/develop
 
 # ... trabajas, commiteas ...
 git add .
 git commit -m "feat: descripción corta en presente"
 
-git push -u origin feature/nombre-de-la-tarea
+git push origin dev_johan_alvarez
 ```
 
-Luego abres un **Pull Request hacia `develop`** en la plataforma del repo. Reglas:
+Luego abres un **Pull Request de tu rama `dev_` hacia `develop`** en GitHub. Reglas:
 
 - Al menos un compañero revisa y aprueba antes del merge.
 - Un PR con el build, los tests críticos o las migraciones en rojo **no se mergea**.
-- Nunca hagas push directo a `develop` ni a `main`.
+- Nunca hagas push directo a `develop` ni a `main`, ni a la rama `dev_` de otro compañero.
+- Después de que te mergeen el PR, actualiza tu rama con `git pull origin develop` antes de seguir trabajando.
+
+### Los tres merges que vas a usar
+
+**1. Traer `develop` a tu rama personal** — hazlo seguido, idealmente cada mañana. Mientras menos tiempo pases desactualizado, menos conflictos tienes.
+
+```bash
+git checkout dev_johan_alvarez
+git fetch origin
+git merge origin/develop
+git push origin dev_johan_alvarez
+```
+
+**2. Tu rama `dev_` → `develop`** — esto **no se hace a mano**. Se hace abriendo un Pull Request en GitHub y usando el botón *Merge pull request* después de la aprobación. Así queda la revisión registrada y corren los checks del CI.
+
+Solo si necesitas verlo en local antes del PR (para probar cómo queda la integración), pero **sin pushear `develop`**:
+
+```bash
+git checkout develop
+git pull origin develop
+git merge dev_johan_alvarez     # revisas que compile y pasen los tests
+git merge --abort               # o descartas: git reset --hard origin/develop
+```
+
+**3. `develop` → `main`** (lanzamiento a producción) — también por Pull Request en GitHub, y solo cuando lo validado en staging está listo. Lo hace quien coordine el release, no cada desarrollador.
+
+### Resolver un conflicto de merge
+
+Cuando `git merge origin/develop` te dice `CONFLICT`:
+
+```bash
+git status                  # lista los archivos en conflicto
+# abres cada archivo y editas: borras los marcadores <<<<<<<, =======, >>>>>>>
+# y dejas el código como debe quedar
+
+git add archivo-que-arreglaste.java
+git commit                  # sin -m: Git propone el mensaje del merge, lo aceptas
+git push origin dev_johan_alvarez
+```
+
+Si te enredaste y quieres empezar de nuevo, mientras no hayas commiteado:
+
+```bash
+git merge --abort
+```
+
+Regla práctica: si el conflicto toca código de otro compañero, resuélvanlo entre los dos. No borres su trabajo para que compile.
+
+---
 
 Al mergear a `develop` se despliega automáticamente a **staging**; al mergear `develop` → `main`, a **producción**.
 
