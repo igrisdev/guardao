@@ -14,7 +14,8 @@ El plan completo del proyecto vive en [`docs/plan-proyecto-guardao.md`](docs/pla
 4. [Puesta en marcha paso a paso](#4-puesta-en-marcha-paso-a-paso)
 5. [Comandos del día a día](#5-comandos-del-día-a-día)
 6. [Flujo de trabajo con Git](#6-flujo-de-trabajo-con-git)
-7. [Problemas comunes](#7-problemas-comunes)
+7. [Gestión de tareas en Jira](#7-gestión-de-tareas-en-jira)
+8. [Problemas comunes](#8-problemas-comunes)
 
 ---
 
@@ -401,7 +402,47 @@ Prefijos de commit que usamos: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `
 
 **Nunca commitees:** archivos `.env`, credenciales, llaves de Wompi, ni las carpetas `target/`, `node_modules/` o `.next/` (ya están en `.gitignore`).
 
-## 7. Problemas comunes
+## 7. Gestión de tareas en Jira
+
+El trabajo se organiza en Jira: **https://johanalvarez.atlassian.net**
+
+Cada etapa del roadmap es un **Epic**, y dentro van las tareas de backend, frontend y testing. Todo ticket tiene una clave del tipo `GUA-12` — esa clave es la que conecta Jira con el código.
+
+### Ciclo de una tarea
+
+1. Tomas un ticket del tablero y lo **asignas a ti mismo**.
+2. Lo mueves a **En curso** antes de empezar a escribir código. Si no está en curso, para el equipo ese ticket sigue libre.
+3. Trabajas en tu rama personal `dev_nombre_apellido` (ver [sección 6](#6-flujo-de-trabajo-con-git)).
+4. Abres el PR hacia `develop`.
+5. Cuando el PR se mergea, mueves el ticket a **Listo**.
+
+### La clave del ticket va en el commit y en el PR
+
+Escribe la clave **al inicio del mensaje de commit**, después del prefijo:
+
+```bash
+git commit -m "feat: GUA-12 agrega entidad Business y su repositorio"
+git commit -m "fix: GUA-27 corrige validación de horario partido"
+```
+
+Y en el **título del Pull Request**:
+
+```
+GUA-12 Entidades Business, Location y User
+```
+
+Con eso Jira enlaza solo los commits y el PR al ticket, y cualquiera puede ver desde Jira qué código resolvió qué tarea. Un commit sin clave se pierde: nadie sabe a qué tarea pertenece.
+
+Si un commit no corresponde a ningún ticket (ajustes menores, documentación), déjalo sin clave — pero que sea la excepción.
+
+### Reglas del tablero
+
+- **Un ticket en curso por persona.** Si te bloqueas, coméntalo en el ticket y toma otro; no dejes tres abiertos a la vez.
+- **Comenta en el ticket, no en el chat.** Decisiones, dudas y bloqueos van en el ticket para que queden registrados donde está el trabajo.
+- **Si algo no está en Jira, no existe.** Encontraste un bug o falta algo del plan: crea el ticket antes de ponerte a resolverlo.
+- **No cambies el alcance de un ticket sobre la marcha.** Si crece, se parte en otro ticket.
+
+## 8. Problemas comunes
 
 **`port is already allocated` al levantar Docker (puerto 5432)**
 Tienes un PostgreSQL instalado nativo ocupando el puerto. Apágalo:

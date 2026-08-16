@@ -1,0 +1,21 @@
+# Normaliza los finales de línea para que Windows y macOS no generen
+# diffs falsos en archivos que nadie tocó.
+* text=auto eol=lf
+
+# Los scripts de Windows deben conservar CRLF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# El wrapper de Maven es un script de shell: siempre LF
+mvnw text eol=lf
+
+# Binarios: no tocar
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+*.pdf binary
+*.woff binary
+*.woff2 binary
