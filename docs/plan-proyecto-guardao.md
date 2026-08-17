@@ -56,6 +56,12 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 - Carrito de compras: el cliente puede agregar varios productos con cantidad y pagar en línea directo desde la página (checkout contra Wompi, independiente del flujo de cobro de citas)
 - Galería de fotos/videos: se alimenta automáticamente desde Instagram y/o TikTok si están conectados, y también admite fotos subidas manualmente por el negocio — útil para quien no tiene redes conectadas, o quiere complementar
 
+**Personalización visual de la página pública**
+- Cada barbería elige desde su dashboard los colores con los que sus clientes ven la página de reservas
+- 5 paletas predefinidas, más una opción "personalizada" donde puede ajustar cada color a mano
+- La personalización es solo de colores: no incluye fuentes, tamaños ni disposición de la página
+- Aplica únicamente a la página pública; el dashboard mantiene siempre su paleta oscura
+
 **Cancelación y reprogramación del cliente**
 - Sin necesidad de crear cuenta: el cliente recibe un enlace privado (token único por cita) donde puede ver, cancelar o reprogramar su reserva
 - Reprogramar pasa por la misma validación de disponibilidad que una reserva nueva
@@ -130,6 +136,8 @@ erDiagram
     string type
     string referral_code
     uuid referred_by_id FK
+    string theme_preset
+    jsonb theme_colors
   }
   LOCATION {
     uuid id PK
@@ -279,6 +287,30 @@ erDiagram
   }
 ```
 
+### Tema visual de la página pública
+
+`BUSINESS.theme_preset` y `BUSINESS.theme_colors` guardan la personalización de colores de la página de reservas.
+
+Las 5 paletas predefinidas **viven en código**, como constantes compartidas entre backend y frontend — no en base de datos. El negocio solo guarda cuál eligió, así que afinar una paleta más adelante es cambiar una constante, sin migración ni script de actualización.
+
+`theme_colors` es nulo salvo cuando `theme_preset = 'custom'`, y entonces contiene los 5 tokens de color elegidos a mano. Se usa `jsonb` en vez de cinco columnas para poder sumar un sexto token después sin migrar la tabla.
+
+Los tokens son semánticos, no colores sueltos, para que ninguna combinación deje la página ilegible:
+
+| Token | Para qué |
+|---|---|
+| `primary` | Botones de acción, horario seleccionado |
+| `primary_foreground` | Texto sobre el color primario |
+| `background` | Fondo de la página |
+| `surface` | Tarjetas, calendario, formulario |
+| `foreground` | Texto principal |
+
+El resto de colores (bordes, texto secundario, estado deshabilitado) se derivan por opacidad de esos cinco.
+
+El tema vive en `BUSINESS` y no en `LOCATION` porque la marca es del negocio: una barbería con tres sedes sigue siendo una sola página con selector de sede, no tres identidades visuales.
+
+---
+
 `SCHEDULE.staff_id` es opcional: nulo significa horario general de la sede, con valor significa el horario específico de ese barbero. `BLOCK` cubre lo puntual (vacaciones, un bloqueo de una tarde) que no encaja en un horario recurrente semanal. `USER.staff_id` solo se llena cuando `role = STAFF`, y es lo que conecta a un barbero con su propio inicio de sesión. `PRODUCT.stock` es opcional: nulo significa que el negocio no controla inventario (stock ilimitado); con un número, el checkout lo valida y lo descuenta.
 
 ## 5. Roadmap, en 4 frentes escalonados
@@ -307,7 +339,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 ### Etapa 0 — Setup del proyecto
 - Crear proyecto Spring Boot (Web, JPA, Security, Validation, driver de PostgreSQL)
 - Configurar conexión a PostgreSQL con perfiles (local, staging, producción)
-- Configurar Flyway y escribir la migración inicial con las 17 tablas del esquema
+- Configurar Flyway y escribir la migración inicial con las 17 tablas del esquema, incluyendo desde ya las columnas `theme_preset` y `theme_colors` de `BUSINESS` (el tema se implementa en la Etapa 4, pero dejarlas aquí evita una migración extra sobre una tabla ya en producción)
 - Configurar Spring Security base: generación y validación de JWT, filtro de autenticación
 - Configurar CORS para permitir el dominio del frontend
 - Manejo global de errores (`@ControllerAdvice`) con formato de respuesta consistente
@@ -352,6 +384,9 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Endpoint público (por token): ver el detalle de una cita, cancelarla o reprogramarla — sin necesidad de login del cliente
 - Reprogramar revalida disponibilidad igual que una reserva nueva
 - Rate limiting básico en los endpoints públicos
+- Definir las 5 paletas predefinidas como constantes compartidas, y el endpoint para que el negocio guarde su tema (preset elegido o los 5 colores personalizados)
+- Validación estricta del formato `#RRGGBB` en los colores personalizados: el valor termina dentro de una etiqueta `<style>` de la página pública, así que sin validar sería una vía de inyección de CSS
+- Incluir el tema resuelto en la respuesta del endpoint público de datos de la barbería (no es un endpoint nuevo)
 
 ### Notificaciones (transversal, se integra en las etapas 3 a 5)
 - Entidad `Notification` (canal, tipo, estado, fecha de envío) para trazabilidad
@@ -435,6 +470,9 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Sección de catálogo de productos con imagen
 - Galería de fotos/videos (Instagram/TikTok)
 - Pantalla de gestión de cita vía enlace privado: ver, cancelar o reprogramar sin login
+- Construir toda la página pública sobre tokens de color (variables CSS), nunca con colores fijos — el layout público inyecta las variables desde el servidor, así que no hay parpadeo de color al cargar
+- Pantalla de configuración del tema: las 5 paletas como tarjetas de vista previa, selector de color por token cuando elige "personalizada", y previsualización en vivo de la página
+- Advertencia de contraste insuficiente cuando una combinación personalizada deja el texto difícil de leer — es un aviso, no un bloqueo: es su marca
 
 ### Etapa 5 — Pagos
 - Panel para conectar la cuenta Wompi del negocio
@@ -493,6 +531,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Tests E2E parcial del flujo de reserva pública
 - Tests de seguridad: `manage_token` no adivinable ni enumerable, rate limiting en endpoints públicos
 - Tests Frontend: formulario de reserva, calendario de disponibilidad, manejo de errores (ej. "ese horario ya no está disponible")
+- Tests del tema: guardar un preset y una paleta personalizada, rechazo de colores con formato inválido o con intento de inyección de CSS, y que la página pública renderice con los colores del negocio correcto
 
 ### Notificaciones (transversal, etapas 3 a 5)
 - Tests de integración: envío disparado por cada evento (confirmación, cancelación, reprogramación, pago recibido) y por el job de recordatorios
