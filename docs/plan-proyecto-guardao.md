@@ -97,22 +97,26 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 
 **Planes de suscripción**
 
-Tres planes. El detalle y el porqué de cada límite están en el [ADR-012](./adr/012-planes-precios-descuentos.md).
+Cinco planes. El detalle y el porqué de cada límite están en el [ADR-012](./adr/012-planes-precios-descuentos.md).
 
-| | **Prueba** | **Básico** | **Profesional** |
-|---|---|---|---|
-| Precio | Gratis, 15 días | 50.000 COP/mes | 100.000 COP/mes |
-| Sedes | 1 | 1 | hasta 5 |
-| Barberos | hasta 3 | hasta 3 | sin límite |
-| Agenda, reservas y página pública | ✅ | ✅ | ✅ |
-| Cobros con Wompi y adelantos | ✅ | ✅ | ✅ |
-| WhatsApp | cupo de prueba | cupo mensual | cupo ampliado |
-| Lealtad, catálogo y galería | ✅ | — | ✅ |
-| Informes | completos | básicos | por barbero e ingresos |
+| | **Prueba** | **Inicial** | **Básico** | **Profesional** | **Empresarial** |
+|---|---|---|---|---|---|
+| Precio | Gratis, 15 días | 25.000 COP | 50.000 COP | 100.000 COP | Desde 120.000, a convenir |
+| Cómo se contrata | Solo | Solo | Solo | Solo | Hablando con Guardao |
+| Sedes | 1 | 1 | 1 | hasta 5 | a convenir |
+| Barberos | hasta 3 | hasta 2 | hasta 6 | sin límite | sin límite |
+| Agenda, reservas y página pública | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cobros con Wompi y adelantos | ✅ | ✅ | ✅ | ✅ | ✅ |
+| WhatsApp | cupo de prueba | cupo bajo | cupo medio | cupo alto | a convenir |
+| Lealtad | ✅ | — | ✅ | ✅ | ✅ |
+| Catálogo y galería | ✅ | — | — | ✅ | ✅ |
+| Informes | completos | básicos | básicos | por barbero e ingresos | a convenir |
 
-Lo que ve el cliente final de la barbería —reservar, cancelar, reprogramar, recibir confirmación— **es igual en los tres planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp, el tamaño del negocio y las líneas de venta adicionales.
+**Inicial** es para el barbero que trabaja solo o con un ayudante. **Básico**, la barbería de barrio con equipo. **Profesional**, quien ya tiene varias sedes o vende productos. **Empresarial** no se contrata desde la aplicación: quien tiene ocho sedes necesita una conversación, no un formulario, y su precio y sus topes se acuerdan uno a uno.
 
-Las ofertas se aplican como un porcentaje con vencimiento sobre la suscripción: registrarse con un código de referido o una campaña de lanzamiento dan un descuento por los primeros meses, y al agotarse el cobro vuelve solo al precio normal.
+Lo que ve el cliente final de la barbería —reservar, cancelar, reprogramar, recibir confirmación— **es igual en los cinco planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp, el tamaño del negocio y las líneas de venta adicionales.
+
+**Descuentos.** Un porcentaje con vencimiento sobre la suscripción, que al agotarse devuelve el cobro al precio normal por sí solo. Hay dos formas de conseguirlo, y **nunca se acumulan**: el código de referido de otra barbería, o un código de promoción que Guardao crea desde su panel interno para una campaña, con vigencia y tope de usos. Si alguien llega con los dos, manda el de referido; el vínculo con quien lo refirió se registra igual, porque de ahí sale su comisión.
 
 Al terminar la prueba o vencerse el pago, la cuenta pasa a solo lectura: deja de recibir reservas nuevas, pero las citas ya agendadas siguen visibles y los enlaces que ya recibieron los clientes siguen funcionando.
 
@@ -333,6 +337,10 @@ El tema vive en `BUSINESS` y no en `LOCATION` porque la marca es del negocio: un
 ---
 
 `SCHEDULE.staff_id` es opcional: nulo significa horario general de la sede, con valor significa el horario específico de ese barbero. `BLOCK` cubre lo puntual (vacaciones, un bloqueo de una tarde) que no encaja en un horario recurrente semanal. `USER.staff_id` solo se llena cuando `role = STAFF`, y es lo que conecta a un barbero con su propio inicio de sesión. `PRODUCT.stock` es opcional: nulo significa que el negocio no controla inventario (stock ilimitado); con un número, el checkout lo valida y lo descuenta.
+
+`USER.business_id` es nulo únicamente en los `SUPER_ADMIN`: son personal interno de Guardao, que es la plataforma y no una barbería, así que no cuelgan de ningún negocio. La base lo exige en ambos sentidos.
+
+**Lo que le falta a este modelo.** El diagrama es el esquema que existe hoy. Los planes de suscripción ([ADR-012](./adr/012-planes-precios-descuentos.md)) agregan en la Etapa 5 el precio pactado y el descuento vigente sobre `SUBSCRIPTION`, los topes negociados del plan Empresarial, y una tabla `PROMO_CODE` con los códigos de campaña que crea Guardao desde su panel. Todavía no están migrados.
 
 ## 5. Roadmap, en 4 frentes escalonados
 
