@@ -38,6 +38,14 @@ public enum ErrorCode {
             "Hay campos con datos invalidos"),
     UNAUTHENTICATED(HttpStatus.UNAUTHORIZED,
             "Se requiere iniciar sesion"),
+    // Un solo codigo para correo inexistente y clave equivocada: distinguirlos
+    // le confirmaria a un atacante que correos tienen cuenta (GUA-21)
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED,
+            "Correo o contraseña incorrectos"),
+    // Separado del anterior para que el frontend sepa que debe mandar al login
+    // en vez de mostrar el formulario con un error de campo
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+            "La sesion expiro, vuelva a iniciar sesion"),
     FORBIDDEN(HttpStatus.FORBIDDEN,
             "No tiene permisos para esta accion"),
     NOT_FOUND(HttpStatus.NOT_FOUND,

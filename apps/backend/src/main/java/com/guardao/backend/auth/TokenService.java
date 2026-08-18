@@ -94,6 +94,15 @@ public class TokenService {
         return TYPE_ACCESS.equals(jwt.getClaimAsString(CLAIM_TOKEN_TYPE));
     }
 
+    /**
+     * Y un token de acceso tampoco sirve para renovar la sesion. Se comprueba
+     * que el tipo sea refresco, en vez de dar por bueno "lo que no es acceso":
+     * un token sin el claim de tipo no es ninguno de los dos.
+     */
+    public static boolean isRefreshToken(Jwt jwt) {
+        return TYPE_REFRESH.equals(jwt.getClaimAsString(CLAIM_TOKEN_TYPE));
+    }
+
     private String encode(JwtClaimsSet claims) {
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
