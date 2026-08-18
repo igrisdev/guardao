@@ -351,13 +351,13 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Endpoint de registro de barbería (crea `Business` + `Location` inicial + `User` con rol `OWNER`)
 - Endpoint de login (devuelve JWT) y de refresh token
 - Middleware que resuelve el `business_id` del usuario autenticado y lo aplica a cada consulta (aislamiento multi-tenant)
-- Endpoint para que el `OWNER` cree usuarios `STAFF` vinculados a un barbero existente (`User.staff_id`)
 - Mecanismo para crear usuarios `SUPER_ADMIN` (solo vía script/seed, nunca público)
 - CRUD de sedes (`Location`): crear, editar, listar, eliminar
 
 ### Etapa 2 — Staff, servicios, habilidades y horarios individuales
 - Entidades `Staff`, `Service`, `Skill`
 - CRUD de staff por sede
+- Endpoint para que el `OWNER` cree usuarios `STAFF` vinculados a un barbero existente (`User.staff_id`). Movido aquí desde la Etapa 1: `app_user.staff_id` apunta por llave foránea a `staff`, y un `CHECK` exige que todo usuario `STAFF` traiga el suyo, así que no se puede crear ninguno antes de que exista la entidad `Staff`
 - CRUD de servicios por sede (con duración en pasos de 30 minutos)
 - Endpoint para asignar/quitar habilidades entre staff y servicios
 - Entidad y CRUD de `Schedule` (horario general de sede, y horario específico opcional por barbero)
@@ -515,12 +515,13 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 
 ### Etapa 1 — Auth, aislamiento multi-tenant y seguridad básica
 - Tests unitarios: generación y validación de JWT
-- Tests de integración: registro, login, creación de usuarios `STAFF` vinculados a su staff
+- Tests de integración: registro, login y refresco de sesión
 - Tests de seguridad: acceso sin token, token inválido o expirado, intento de leer datos de otro `business_id`
 
 ### Etapa 2 — Disponibilidad, staff, servicios y habilidades
 - Tests unitarios: cálculo de disponibilidad cruzando horario general + horario individual + bloqueos
 - Tests de integración: CRUD de staff y servicios, asignación de habilidades (`Skill`)
+- Tests de integración: creación de usuarios `STAFF` vinculados a su staff, y que ese usuario pueda iniciar sesión (acompaña al endpoint movido desde la Etapa 1)
 
 ### Etapa 3 — Motor de reservas
 - Tests específicos del motor: solapamiento de horarios, doble reserva simultánea (verificando que la restricción `EXCLUDE` rechaza el conflicto), revalidación dentro de la transacción, duración variable por servicio
