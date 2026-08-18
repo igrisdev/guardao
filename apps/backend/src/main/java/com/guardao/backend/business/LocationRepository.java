@@ -20,4 +20,7 @@ public interface LocationRepository extends TenantScopedRepository<Location, UUI
 
     /** Usar esta en vez de findById en todo lo que venga de una peticion. */
     Optional<Location> findByIdAndBusinessId(UUID id, UUID businessId);
+
+    /** GUA-25: un negocio no puede quedarse sin ninguna sede activa. */
+    long countByBusinessIdAndActiveTrue(UUID businessId);
 }

@@ -28,6 +28,10 @@ public enum ErrorCode {
     // de los dos campos marcar en rojo (GUA-20)
     EMAIL_TAKEN(HttpStatus.CONFLICT,
             "Ese correo ya tiene una cuenta"),
+    // Un negocio sin ninguna sede activa no puede recibir reservas: su pagina
+    // publica se queda sin nada que ofrecer (GUA-25)
+    LAST_ACTIVE_LOCATION(HttpStatus.CONFLICT,
+            "No puede desactivar la unica sede activa del negocio"),
 
     // --- Pagos ---
     INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED,
