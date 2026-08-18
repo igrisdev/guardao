@@ -92,7 +92,7 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 
 **Referidos**
 - Código de referido único por barbería, generado al registrarse
-- Cada barbería referida que esté pagando descuenta **10 puntos porcentuales de la suscripción de quien la refirió**, durante sus primeros **3 meses de pago**
+- Cada barbería referida que esté pagando descuenta **10 puntos porcentuales de la suscripción de quien la refirió**, durante sus primeros **3 pagos** — si se atrasa un mes, el cupo se pausa y retoma cuando pague
 - Los descuentos se suman: tres referidos pagando son 30% menos. Al llegar a 100% el mes sale gratis, y lo que pase de ahí se pierde — no queda saldo a favor ni se paga en efectivo
 - Cada mes se cuenta de nuevo. Como el beneficio de cada referido dura 3 meses, mantenerlo exige seguir refiriendo: es un incentivo recurrente, no una renta
 - El pago al referidor es siempre un descuento en su propia factura. Guardao nunca le transfiere dinero, lo que evita toda una operación de pagos salientes

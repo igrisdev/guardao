@@ -110,19 +110,22 @@ Guardao **nunca le transfiere dinero a nadie**. Pagar comisiones salientes exige
 La regla:
 
 - Cada barbería referida que **esté pagando** descuenta **10 puntos porcentuales** de la suscripción de quien la refirió.
-- El beneficio dura los **primeros 3 pagos** de la referida. Después se apaga.
+- El beneficio dura los **primeros 3 pagos** de la referida, ocurran cuando ocurran. Si un mes no paga, no se pierde el cupo: se pausa y retoma cuando vuelva a pagar, hasta completar los 3. No se cuentan meses corridos, se cuentan pagos.
 - Los descuentos de varios referidos **se suman**: tres referidos pagando son 30% menos.
 - Al llegar a **100% el mes sale gratis**. Lo que pase de ahí **se pierde**: no queda saldo a favor, no se acumula para el mes siguiente, no se paga en efectivo.
 - **Cada mes se recalcula desde cero.** El mes siguiente se vuelve a mirar quién está pagando y cuántos pagos lleva.
 
 Ejemplo, con el referidor en Básico (50.000):
 
-| | Referidos que pagaron | Descuento | Paga |
+| | Qué pasó con las tres referidas | Descuento | Paga |
 |---|---|---|---|
-| Mes 1 | 3 | 30% | 35.000 |
-| Mes 2 | 3 | 30% | 35.000 |
-| Mes 3 | 2 (uno no pagó) | 20% | 40.000 |
-| Mes 4 | 0 (los tres cumplieron sus 3 pagos) | — | 50.000 |
+| Mes 1 | Las tres pagan (pago 1 de cada una) | 30% | 35.000 |
+| Mes 2 | Las tres pagan (pago 2) | 30% | 35.000 |
+| Mes 3 | Dos pagan su tercer pago; la tercera se atrasa | 20% | 40.000 |
+| Mes 4 | Las dos primeras ya agotaron sus 3 pagos. La atrasada se pone al día: ese es su pago 3 | 10% | 45.000 |
+| Mes 5 | Ninguna genera ya | — | 50.000 |
+
+El mes 4 es el que muestra la regla: atrasarse no le quitó el cupo a nadie, solo lo corrió de mes.
 
 **El 10% es de la factura del referidor, no de la del referido.** Así "trae diez barberías y no pagas" es cierto siempre, sin importar en qué plan estén ellas. Calcularlo sobre lo que paga el referido haría que el mismo esfuerzo valiera cuatro veces más o menos según el plan del otro, y volvería la promesa imposible de enunciar en una frase.
 
@@ -132,8 +135,10 @@ Dos plazos, ambos de 3 días y fáciles de confundir:
 
 | Situación | Regla |
 |---|---|
-| La referida se atrasa en su pago | Tiene **3 días hábiles** de gracia. Si paga dentro de ellos, el referidor conserva el descuento de ese mes; si no, lo pierde. La gracia existe porque no todos activan el cobro automático |
-| La referida cancela y vuelve | Si vuelve **antes de 3 días**, sigue contando para el referidor. Pasados los 3 días, el vínculo deja de generar beneficio |
+| La referida se atrasa en su pago | Tiene **3 días hábiles** de gracia. Si paga dentro de ellos, el descuento entra en ese mismo ciclo; si no, ese ciclo se pierde, pero **el pago sigue contando** para completar los 3 cuando entre. La gracia existe porque no todos activan el cobro automático |
+| La referida cancela y vuelve | Si vuelve **antes de 3 días**, sigue contando. Pasados los 3 días, el vínculo deja de generar beneficio del todo |
+
+Atrasarse y cancelar no son lo mismo, y la diferencia es deliberada: quien se demora sigue siendo cliente, quien cancela decidió irse. El beneficio del referidor sobrevive a lo primero y no a lo segundo.
 
 **Esto no cabe en los campos del punto 5, y es correcto que no quepa.** El descuento de bienvenida es uno solo y con vencimiento fijo; el del referidor es acumulable y cambia todos los meses. Son dos cosas distintas y se calculan distinto: el del referidor **no se guarda**, se calcula al facturar contando las barberías con `referred_by_id` apuntando a esta que lleven 3 pagos o menos. Sale de datos que ya existen, sin tabla nueva.
 
@@ -232,4 +237,4 @@ Apagar la barbería por completo castigaría a sus clientes finales, que no tien
 ## Pendiente de definir
 
 - El número exacto de los cupos de WhatsApp por plan, que depende del precio por mensaje de Meta en Colombia
-- Si la racha de la referida se rompe o se pausa cuando deja de pagar más allá de los 3 días hábiles de gracia
+- Cuántos meses puede quedar pausado un cupo antes de darlo por perdido: hoy no caduca, así que una referida que vuelve a pagar un año después todavía completaría sus 3 pagos
