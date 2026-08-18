@@ -1,0 +1,93 @@
+# GUA-18 — Puerta de calidad de cada Pull Request.
+#
+# Corre en todo PR hacia develop y main. Los dos jobs se ejecutan siempre,
+# sin filtros por ruta: un job saltado nunca reporta su check y dejaria pasar
+# un merge que las reglas de rama creen que esta esperando.
+#
+# El job de backend cubre tambien la validacion de migraciones: los tests de
+# integracion levantan Postgres con Testcontainers y Flyway construye el
+# esquema desde cero (GUA-17).
+
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# Un push nuevo al mismo PR cancela la corrida anterior, que ya quedo vieja.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend — build, tests y migraciones
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # verify incluye compilacion y toda la suite. El runner de GitHub trae
+      # Docker, que es lo que necesita Testcontainers para levantar Postgres.
+      - name: Build y tests de integracion
+        working-directory: apps/backend
+        run: ./mvnw -B verify
+
+      - name: Publicar reportes de test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-backend
+          path: apps/backend/target/surefire-reports/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  frontend:
+    name: Frontend — lint y build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/frontend
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          # Fijada a mano: pnpm/action-setup lee packageManager del
+          # package.json de la raiz, y aqui vive en apps/frontend
+          version: 10.33.0
+
+      - name: Instalar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: apps/frontend/pnpm-lock.yaml
+
+      # frozen-lockfile falla si package.json y el lock no concuerdan,
+      # en vez de "arreglarlo" silenciosamente y build algo distinto a local
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
