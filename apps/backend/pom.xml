@@ -76,6 +76,16 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- GUA-11: emision y validacion de JWT con Nimbus.
+		     Aporta el filtro de token portador, asi no escribimos un filtro
+		     propio para algo que Spring Security ya resuelve.
+		     Ojo: el artefacto spring-boot-starter-oauth2-resource-server
+		     quedo deprecado en Boot 4; este es el nombre vigente. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
+		</dependency>
+
 		<!-- GUA-8: validacion de DTOs con @Valid. El formato de error se define en GUA-12 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

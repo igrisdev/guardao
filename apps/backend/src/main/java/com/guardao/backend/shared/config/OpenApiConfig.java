@@ -1,4 +1,4 @@
-package com.guardao.backend.config;
+package com.guardao.backend.shared.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
