@@ -19,6 +19,8 @@ spring:
     baseline-on-migrate: false
 
 guardao:
+  cors:
+    allowed-origins: http://localhost:3000
   jwt:
     secret: secreto-solo-para-tests-000000000000000000000000000000
     access-token-minutes: 5

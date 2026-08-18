@@ -18,9 +18,11 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.guardao.backend.auth.AccessTokenAuthenticationConverter;
 import com.guardao.backend.auth.JwtProperties;
+import com.guardao.backend.shared.error.SecurityErrorResponder;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 /**
@@ -70,8 +72,14 @@ public class SecurityConfig {
     };
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+            JwtDecoder jwtDecoder,
+            CorsConfigurationSource corsConfigurationSource,
+            SecurityErrorResponder errorResponder) throws Exception {
         http
+                // GUA-12: origenes permitidos por perfil
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+
                 // No hay cookies de sesion: el token viaja en el header
                 // Authorization, que no se envia solo. CSRF no aplica.
                 .csrf(csrf -> csrf.disable())
@@ -90,7 +98,16 @@ public class SecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder)
-                                .jwtAuthenticationConverter(new AccessTokenAuthenticationConverter())));
+                                .jwtAuthenticationConverter(new AccessTokenAuthenticationConverter()))
+                        // Sin esto, un token invalido devuelve un cuerpo vacio
+                        // en vez del JSON de error del resto de la API
+                        .authenticationEntryPoint(errorResponder))
+
+                // GUA-12: 401 y 403 de la cadena de filtros con el mismo
+                // formato que los errores de los controladores
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(errorResponder)
+                        .accessDeniedHandler(errorResponder));
 
         return http.build();
     }

@@ -16,6 +16,7 @@ El plan completo del proyecto vive en [`docs/plan-proyecto-guardao.md`](docs/pla
 6. [Flujo de trabajo con Git](#6-flujo-de-trabajo-con-git)
 7. [Gestión de tareas en Jira](#7-gestión-de-tareas-en-jira)
 8. [Problemas comunes](#8-problemas-comunes)
+9. [Convenciones que muerden](#9-convenciones-que-muerden)
 
 ---
 
@@ -501,3 +502,32 @@ Nunca modifiques una migración de Flyway que ya está en `develop` — crea una
 
 **Docker Desktop no arranca en Windows**
 Falta WSL2. En PowerShell como administrador: `wsl --install`, reinicia y vuelve a abrir Docker Desktop.
+
+**El backend compila pero al arrancar dice `required a bean of type 'com.fasterxml.jackson.databind.ObjectMapper'`**
+Importaste Jackson 2. Spring Boot 4 usa **Jackson 3**, que vive en `tools.jackson`:
+
+```java
+import tools.jackson.databind.ObjectMapper;              // correcto
+import com.fasterxml.jackson.databind.ObjectMapper;      // compila, pero no hay bean
+```
+
+Jackson 2 sigue en el classpath porque lo arrastran springdoc y nimbus, por eso el import equivocado no da error de compilación. Las anotaciones (`@JsonInclude`, `@JsonProperty`) **sí** siguen en `com.fasterxml.jackson.annotation`: esa no se toca. Detalle completo en [ADR-011](./docs/adr/011-jackson-3-en-spring-boot-4.md).
+
+---
+
+## 9. Convenciones que muerden
+
+Cosas que compilan pero fallan al arrancar o en producción. Vale la pena leerlas antes de escribir código, no después.
+
+| Tema | Regla | Detalle |
+|---|---|---|
+| **Jackson** | `tools.jackson.databind`, nunca `com.fasterxml.jackson.databind`. Las anotaciones son la excepción | [ADR-011](./docs/adr/011-jackson-3-en-spring-boot-4.md) |
+| **Migraciones** | Una migración ya mergeada a `develop` no se edita jamás. Se corrige con una nueva | [ADR-007](./docs/adr/007-flyway-sobre-ddl-auto.md) |
+| **Doble reserva** | No elimines ni debilites la restricción `appointment_no_overlap`. Si un test choca con ella, el error está en el código | [ADR-003](./docs/adr/003-exclude-constraint-doble-reserva.md) |
+| **Multi-tenant** | El `business_id` sale siempre del JWT, nunca de un parámetro de la petición | [ADR-004](./docs/adr/004-aislamiento-multi-tenant.md) |
+| **Dinero** | Entero en pesos. Sin decimales, sin coma flotante | [Tech Spec 3.1](./docs/tech-spec-guardao.md) |
+| **Fechas** | `timestamptz` siempre. Las horas de horario van en `time` sin zona | [Tech Spec 3.1](./docs/tech-spec-guardao.md) |
+| **Precio de la cita** | Se copia del servicio al agendar. No se lee del servicio después | [ADR-010](./docs/adr/010-snapshot-precio-duracion.md) |
+| **Versiones nuevas** | Spring Boot 4 y Next.js 16 traen cambios de ruptura. Verifica en la documentación de la versión, no asumas lo de la anterior | — |
+
+La última merece énfasis: buena parte de lo que encuentres en internet y lo que sugieren los asistentes de IA es de Spring Boot 3 y Next.js 15. Compila, y falla distinto.

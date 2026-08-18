@@ -22,6 +22,7 @@ Un ADR no se edita cuando cambia la realidad: se escribe uno nuevo que marque al
 | [008](./008-coolify-sobre-dokploy.md) | Coolify como plataforma de despliegue | Aceptado |
 | [009](./009-sin-ia-en-el-producto.md) | Sin IA orientada al cliente final | Aceptado |
 | [010](./010-snapshot-precio-duracion.md) | Snapshot de precio y duración en cada cita | Aceptado |
+| [011](./011-jackson-3-en-spring-boot-4.md) | Jackson 3 como serializador JSON | Aceptado |
 
 ## Plantilla
 

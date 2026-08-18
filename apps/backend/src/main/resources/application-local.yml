@@ -20,6 +20,9 @@ spring:
     baseline-on-migrate: true
 
 guardao:
+  cors:
+    # El frontend de Next.js en desarrollo
+    allowed-origins: http://localhost:3000
   jwt:
     # Secreto de desarrollo. No sirve en ningun otro entorno y no importa
     # que este en el repositorio: staging y produccion lo exigen por entorno.
