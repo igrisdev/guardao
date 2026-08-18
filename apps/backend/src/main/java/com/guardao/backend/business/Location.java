@@ -8,7 +8,9 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import com.guardao.backend.shared.tenant.TenantContext;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.UpdateTimestamp;
 
 /**
@@ -23,6 +25,9 @@ import org.hibernate.annotations.UpdateTimestamp;
  */
 @Entity
 @Table(name = "location")
+// GUA-22 — Solo se ven las filas del negocio de la peticion. El filtro se
+// enciende solo (TenantFilterActivator); aqui no hay nada que recordar.
+@Filter(name = TenantContext.FILTER_NAME, condition = "business_id = :businessId")
 public class Location {
 
     @Id

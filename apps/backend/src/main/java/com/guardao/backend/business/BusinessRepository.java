@@ -2,7 +2,7 @@ package com.guardao.backend.business;
 
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.guardao.backend.shared.tenant.TenantScopedRepository;
 
 /**
  * GUA-19 — Acceso a negocios.
@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * No lleva filtro por tenant: el negocio ES el tenant. Los repositorios que
  * si lo necesitan reciben el businessId del usuario autenticado (ADR-004).
  */
-public interface BusinessRepository extends JpaRepository<Business, UUID> {
+public interface BusinessRepository extends TenantScopedRepository<Business, UUID> {
 
     /** Resuelve el negocio de la pagina publica de reservas (Etapa 4). */
     Optional<Business> findBySlug(String slug);

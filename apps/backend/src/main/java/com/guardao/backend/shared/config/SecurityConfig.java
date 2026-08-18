@@ -17,11 +17,13 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.guardao.backend.auth.AccessTokenAuthenticationConverter;
 import com.guardao.backend.auth.JwtProperties;
+import com.guardao.backend.auth.TenantResolutionFilter;
 import com.guardao.backend.shared.error.SecurityErrorResponder;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
@@ -42,6 +44,10 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret;
  * - Lista blanca de rutas publicas. Todo lo que no este declarado abajo
  *   exige autenticacion. Si alguien agrega un endpoint y olvida la regla,
  *   queda protegido por omision, que es el fallo seguro.
+ *
+ * - GUA-22: en las rutas autenticadas se resuelve el negocio y queda en el
+ *   contexto, para que las consultas se filtren solas. En las publicas no
+ *   hay negocio resuelto, asi que no deben leer datos internos.
  */
 @Configuration
 @EnableWebSecurity
@@ -107,7 +113,13 @@ public class SecurityConfig {
                 // formato que los errores de los controladores
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(errorResponder)
-                        .accessDeniedHandler(errorResponder));
+                        .accessDeniedHandler(errorResponder))
+
+                // GUA-22: resuelve el negocio en cuanto hay autenticacion, y
+                // antes de que cualquier controlador toque la base de datos.
+                // Va despues del filtro de token porque necesita el JWT ya
+                // validado (ADR-004)
+                .addFilterAfter(new TenantResolutionFilter(), BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

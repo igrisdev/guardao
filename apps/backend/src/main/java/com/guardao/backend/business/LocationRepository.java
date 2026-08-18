@@ -3,7 +3,7 @@ package com.guardao.backend.business;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.guardao.backend.shared.tenant.TenantScopedRepository;
 
 /**
  * GUA-19 — Acceso a sedes.
@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * redundante: buscar solo por id permitiria que alguien pidiera la sede de
  * otro negocio y la obtuviera (ADR-004). Con el par, la respuesta es vacia.
  */
-public interface LocationRepository extends JpaRepository<Location, UUID> {
+public interface LocationRepository extends TenantScopedRepository<Location, UUID> {
 
     List<Location> findByBusinessId(UUID businessId);
 

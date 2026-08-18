@@ -3,7 +3,7 @@ package com.guardao.backend.business;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.guardao.backend.shared.tenant.TenantScopedRepository;
 
 /**
  * GUA-19 — Acceso a usuarios.
@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * sabe de que negocio es quien escribe, y por eso el correo es unico en toda
  * la plataforma. El resto de consultas si exige el businessId (ADR-004).
  */
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends TenantScopedRepository<User, UUID> {
 
     /** Punto de entrada del login (GUA-20). */
     Optional<User> findByEmail(String email);

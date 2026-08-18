@@ -8,7 +8,11 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import com.guardao.backend.shared.tenant.TenantContext;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 import org.hibernate.annotations.UpdateTimestamp;
 
 /**
@@ -22,6 +26,19 @@ import org.hibernate.annotations.UpdateTimestamp;
  */
 @Entity
 @Table(name = "business")
+// GUA-22 — Declaracion del filtro de aislamiento, valida para todo el modelo.
+//
+// applyToLoadByKey = true es lo que cierra el hueco importante: por omision
+// los filtros de Hibernate NO se aplican al cargar por clave primaria, de modo
+// que un findById(id-de-otro-negocio) devolveria la fila. Con esta bandera
+// tambien se filtra esa carga y el metodo devuelve vacio.
+@FilterDef(
+        name = TenantContext.FILTER_NAME,
+        parameters = @ParamDef(name = TenantContext.PARAM_BUSINESS_ID, type = UUID.class),
+        applyToLoadByKey = true)
+// El negocio se filtra por su propio identificador: un usuario solo puede
+// cargar el suyo
+@Filter(name = TenantContext.FILTER_NAME, condition = "id = :businessId")
 public class Business {
 
     @Id
