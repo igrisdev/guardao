@@ -95,6 +95,27 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 **Panel admin interno (Guardao)**
 - Ver cuántas barberías están activas en la plataforma, estado de sus suscripciones, métricas generales
 
+**Planes de suscripción**
+
+Tres planes. El detalle y el porqué de cada límite están en el [ADR-012](./adr/012-planes-precios-descuentos.md).
+
+| | **Prueba** | **Básico** | **Profesional** |
+|---|---|---|---|
+| Precio | Gratis, 15 días | 50.000 COP/mes | 100.000 COP/mes |
+| Sedes | 1 | 1 | hasta 5 |
+| Barberos | hasta 3 | hasta 3 | sin límite |
+| Agenda, reservas y página pública | ✅ | ✅ | ✅ |
+| Cobros con Wompi y adelantos | ✅ | ✅ | ✅ |
+| WhatsApp | cupo de prueba | cupo mensual | cupo ampliado |
+| Lealtad, catálogo y galería | ✅ | — | ✅ |
+| Informes | completos | básicos | por barbero e ingresos |
+
+Lo que ve el cliente final de la barbería —reservar, cancelar, reprogramar, recibir confirmación— **es igual en los tres planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp, el tamaño del negocio y las líneas de venta adicionales.
+
+Las ofertas se aplican como un porcentaje con vencimiento sobre la suscripción: registrarse con un código de referido o una campaña de lanzamiento dan un descuento por los primeros meses, y al agotarse el cobro vuelve solo al precio normal.
+
+Al terminar la prueba o vencerse el pago, la cuenta pasa a solo lectura: deja de recibir reservas nuevas, pero las citas ya agendadas siguen visibles y los enlaces que ya recibieron los clientes siguen funcionando.
+
 ## 4. Modelo de datos
 
 ```mermaid
