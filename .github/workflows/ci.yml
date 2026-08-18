@@ -13,8 +13,11 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
+  # Las ramas dev_* son las personales de cada integrante. Correr el CI ahi
+  # tambien da el aviso antes de mergear a develop, no despues.
   push:
-    branches: [develop, main]
+    branches: [develop, main, 'dev_*']
+  workflow_dispatch:
 
 # Un push nuevo al mismo PR cancela la corrida anterior, que ya quedo vieja.
 concurrency:
@@ -31,10 +34,10 @@ jobs:
 
     steps:
       - name: Descargar el codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -48,7 +51,7 @@ jobs:
 
       - name: Publicar reportes de test
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: reportes-backend
           path: apps/backend/target/surefire-reports/
@@ -65,17 +68,17 @@ jobs:
 
     steps:
       - name: Descargar el codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           # Fijada a mano: pnpm/action-setup lee packageManager del
           # package.json de la raiz, y aqui vive en apps/frontend
           version: 10.33.0
 
       - name: Instalar Node 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: pnpm
