@@ -62,8 +62,10 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 - La personalización es solo de colores: no incluye fuentes, tamaños ni disposición de la página
 - Aplica únicamente a la página pública; el dashboard mantiene siempre su paleta oscura
 
-**Cancelación y reprogramación del cliente**
-- Sin necesidad de crear cuenta: el cliente recibe un enlace privado (token único por cita) donde puede ver, cancelar o reprogramar su reserva
+**Confirmación, cancelación y reprogramación del cliente**
+- Sin necesidad de crear cuenta: el cliente recibe un enlace privado (token único por cita) donde puede ver, **confirmar que va a asistir**, cancelar o reprogramar su reserva
+- Confirmar pasa la cita de pendiente a confirmada. No cambia la disponibilidad —el horario está ocupado desde que se reservó— pero le dice a la barbería con quién puede contar y a quién conviene llamar
+- El recordatorio previo a la cita lleva ese mismo enlace: es el momento en que confirmar sirve de algo
 - Reprogramar pasa por la misma validación de disponibilidad que una reserva nueva
 
 **Notificaciones**
@@ -89,8 +91,11 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 - Si un cliente acumula 3 inasistencias seguidas, el sistema exige adelanto obligatorio para poder reservar de nuevo
 
 **Referidos**
-- Código de referido único por barbería
-- Gana un monto fijo por cada barbería referida que se registre y pague, más el 10% de los pagos de suscripción siguientes de esa barbería
+- Código de referido único por barbería, generado al registrarse
+- Cada barbería referida que esté pagando descuenta **10 puntos porcentuales de la suscripción de quien la refirió**, durante sus primeros **3 meses de pago**
+- Los descuentos se suman: tres referidos pagando son 30% menos. Al llegar a 100% el mes sale gratis, y lo que pase de ahí se pierde — no queda saldo a favor ni se paga en efectivo
+- Cada mes se cuenta de nuevo. Como el beneficio de cada referido dura 3 meses, mantenerlo exige seguir refiriendo: es un incentivo recurrente, no una renta
+- El pago al referidor es siempre un descuento en su propia factura. Guardao nunca le transfiere dinero, lo que evita toda una operación de pagos salientes
 
 **Panel admin interno (Guardao)**
 - Ver cuántas barberías están activas en la plataforma, estado de sus suscripciones, métricas generales
@@ -102,21 +107,28 @@ Cinco planes. El detalle y el porqué de cada límite están en el [ADR-012](./a
 | | **Prueba** | **Inicial** | **Básico** | **Profesional** | **Empresarial** |
 |---|---|---|---|---|---|
 | Precio | Gratis, 15 días | 25.000 COP | 50.000 COP | 100.000 COP | Desde 120.000, a convenir |
-| Cómo se contrata | Solo | Solo | Solo | Solo | Hablando con Guardao |
-| Sedes | 1 | 1 | 1 | hasta 5 | a convenir |
-| Barberos | hasta 3 | hasta 2 | hasta 6 | sin límite | sin límite |
-| Agenda, reservas y página pública | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Sedes | 1 | 1 | 1 | hasta 3 | sin límite |
+| Barberos | hasta 6 | 1 | hasta 6 | sin límite | sin límite |
+| Agenda y reservas | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Página pública de reservas | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Confirmar, cancelar y reprogramar por enlace | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Cobros con Wompi y adelantos | ✅ | ✅ | ✅ | ✅ | ✅ |
-| WhatsApp | cupo de prueba | cupo bajo | cupo medio | cupo alto | a convenir |
-| Lealtad | ✅ | — | ✅ | ✅ | ✅ |
-| Catálogo y galería | ✅ | — | — | ✅ | ✅ |
-| Informes | completos | básicos | básicos | por barbero e ingresos | a convenir |
+| Notificaciones por correo | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Notificaciones por WhatsApp | cupo medio | cupo bajo | cupo medio | cupo alto | volumen acordado |
+| Programa de lealtad | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Catálogo de productos y carrito | ✅ | — | ✅ | ✅ | ✅ |
+| Galería de Instagram y TikTok | ✅ | — | ✅ | ✅ | ✅ |
+| Informes | completos | básicos | completos | completos | completos |
 
-**Inicial** es para el barbero que trabaja solo o con un ayudante. **Básico**, la barbería de barrio con equipo. **Profesional**, quien ya tiene varias sedes o vende productos. **Empresarial** no se contrata desde la aplicación: quien tiene ocho sedes necesita una conversación, no un formulario, y su precio y sus topes se acuerdan uno a uno.
+La prueba es exactamente el plan **Básico** durante 15 días: se prueba lo que la mayoría va a contratar, no un plan que nadie tiene.
 
-Lo que ve el cliente final de la barbería —reservar, cancelar, reprogramar, recibir confirmación— **es igual en los cinco planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp, el tamaño del negocio y las líneas de venta adicionales.
+**Inicial** es para el barbero que trabaja solo. **Básico**, la barbería con equipo. **Profesional**, quien ya tiene varias sedes. **Empresarial** no se contrata desde la aplicación: quien tiene ocho sedes necesita una conversación, no un formulario, y su precio se acuerda uno a uno.
 
-**Descuentos.** Un porcentaje con vencimiento sobre la suscripción, que al agotarse devuelve el cobro al precio normal por sí solo. Hay dos formas de conseguirlo, y **nunca se acumulan**: el código de referido de otra barbería, o un código de promoción que Guardao crea desde su panel interno para una campaña, con vigencia y tope de usos. Si alguien llega con los dos, manda el de referido; el vínculo con quien lo refirió se registra igual, porque de ahí sale su comisión.
+Lo que ve el cliente final de la barbería —reservar, confirmar, cancelar, reprogramar, recibir la confirmación— **es igual en todos los planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp y el tamaño del negocio.
+
+**Descuentos.** Un porcentaje con vencimiento sobre la suscripción, que al agotarse devuelve el cobro al precio normal por sí solo. Hay dos orígenes y **nunca se acumulan entre sí**: el código de referido de otra barbería, o un código de promoción que Guardao crea desde su panel interno con vigencia y tope de usos. Si alguien llega con los dos, manda el de referido.
+
+**Al cambiar de plan.** Subir aplica de inmediato y se cobra el precio nuevo en el siguiente ciclo. Bajar se pide, pero solo se ejecuta cuando la barbería queda dentro de los límites del plan destino: la aplicación le muestra exactamente qué sobra y lo va marcando a medida que lo resuelve. Nada se desactiva solo, y bajar de plan nunca borra datos: la lealtad, los productos y las fotos quedan guardados y reaparecen si vuelve a subir.
 
 Al terminar la prueba o vencerse el pago, la cuenta pasa a solo lectura: deja de recibir reservas nuevas, pero las citas ya agendadas siguen visibles y los enlaces que ya recibieron los clientes siguen funcionando.
 
@@ -410,7 +422,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Endpoint público: servicios disponibles con staff filtrado por `Skill` según el servicio elegido
 - Endpoint público: horarios disponibles según sede/staff/fecha
 - Endpoint público: crear reserva — busca o crea `Client` por teléfono, valida si `consecutive_no_shows >= 3` para exigir adelanto, crea la `Appointment` con su `manage_token` único
-- Endpoint público (por token): ver el detalle de una cita, cancelarla o reprogramarla — sin necesidad de login del cliente
+- Endpoint público (por token): ver el detalle de una cita, confirmar la asistencia, cancelarla o reprogramarla — sin necesidad de login del cliente
 - Reprogramar revalida disponibilidad igual que una reserva nueva
 - Rate limiting básico en los endpoints públicos
 - Definir las 5 paletas predefinidas como constantes compartidas, y el endpoint para que el negocio guarde su tema (preset elegido o los 5 colores personalizados)
@@ -498,7 +510,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Aviso de "requiere adelanto" cuando aplica la regla de 3 inasistencias
 - Sección de catálogo de productos con imagen
 - Galería de fotos/videos (Instagram/TikTok)
-- Pantalla de gestión de cita vía enlace privado: ver, cancelar o reprogramar sin login
+- Pantalla de gestión de cita vía enlace privado: ver, confirmar asistencia, cancelar o reprogramar sin login
 - Construir toda la página pública sobre tokens de color (variables CSS), nunca con colores fijos — el layout público inyecta las variables desde el servidor, así que no hay parpadeo de color al cargar
 - Pantalla de configuración del tema: las 5 paletas como tarjetas de vista previa, selector de color por token cuando elige "personalizada", y previsualización en vivo de la página
 - Advertencia de contraste insuficiente cuando una combinación personalizada deja el texto difícil de leer — es un aviso, no un bloqueo: es su marca
