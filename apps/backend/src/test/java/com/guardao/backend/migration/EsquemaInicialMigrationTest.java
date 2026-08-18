@@ -33,15 +33,23 @@ class EsquemaInicialMigrationTest extends IntegrationTest {
     private JdbcTemplate jdbc;
 
     @Test
-    @DisplayName("la migracion V1 queda aplicada y marcada como exitosa")
-    void migracionV1Aplicada() {
-        Boolean exitosa = jdbc.queryForObject(
-                "SELECT success FROM flyway_schema_history WHERE version = '1'",
-                Boolean.class);
+    @DisplayName("todas las migraciones quedan aplicadas sin errores")
+    void todasLasMigracionesAplicadas() {
+        // Se pregunta por las fallidas en vez de por una version concreta: asi
+        // la comprobacion sigue sirviendo cuando se agregue la siguiente
+        List<String> fallidas = jdbc.queryForList(
+                "SELECT version FROM flyway_schema_history WHERE success = false",
+                String.class);
 
-        assertThat(exitosa)
-                .as("Flyway debe haber aplicado V1__esquema_inicial.sql sin errores")
-                .isTrue();
+        assertThat(fallidas).as("Flyway no debe dejar ninguna migracion a medias").isEmpty();
+
+        List<String> aplicadas = jdbc.queryForList(
+                "SELECT version FROM flyway_schema_history WHERE version IS NOT NULL",
+                String.class);
+
+        assertThat(aplicadas)
+                .as("el esquema inicial y el ajuste de los super-admin deben estar puestos")
+                .contains("1", "2");
     }
 
     @Test

@@ -25,6 +25,10 @@ import org.hibernate.annotations.UpdateTimestamp;
  * el rol y el staff se asignan juntos, nunca por separado.
  *
  * Se guarda el hash de la contraseña, jamas la contraseña.
+ *
+ * businessId es nulo unicamente en los SUPER_ADMIN: son personal interno de
+ * Guardao, que es la plataforma y no una barberia (GUA-24). La base lo exige
+ * con el CHECK app_user_business_only_for_tenant_roles, en los dos sentidos.
  */
 @Entity
 @Table(name = "app_user")
@@ -38,7 +42,8 @@ public class User {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "business_id", nullable = false, updatable = false)
+    /** Nulo solo en los SUPER_ADMIN, que no pertenecen a ninguna barberia. */
+    @Column(name = "business_id", updatable = false)
     private UUID businessId;
 
     /**
@@ -83,6 +88,21 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
+    }
+
+    /**
+     * Crea un super-admin interno de Guardao. Va sin negocio a proposito: no
+     * es empleado de ninguna barberia, y la base rechaza la fila si trae uno.
+     *
+     * No hay ningun endpoint que llegue aqui: estos usuarios se crean solo
+     * por el seed de arranque (GUA-24).
+     */
+    public static User superAdmin(String email, String passwordHash) {
+        User user = new User();
+        user.email = email;
+        user.passwordHash = passwordHash;
+        user.role = UserRole.SUPER_ADMIN;
+        return user;
     }
 
     /**

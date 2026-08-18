@@ -49,10 +49,12 @@ public class CurrentUser {
 
     static AuthenticatedUser fromJwt(Jwt jwt) {
         String staffId = jwt.getClaimAsString(TokenService.CLAIM_STAFF_ID);
+        // Ausente en los SUPER_ADMIN, que no pertenecen a ninguna barberia
+        String businessId = jwt.getClaimAsString(TokenService.CLAIM_BUSINESS_ID);
 
         return new AuthenticatedUser(
                 UUID.fromString(jwt.getSubject()),
-                UUID.fromString(jwt.getClaimAsString(TokenService.CLAIM_BUSINESS_ID)),
+                businessId != null ? UUID.fromString(businessId) : null,
                 AuthenticatedUser.Role.valueOf(jwt.getClaimAsString(TokenService.CLAIM_ROLE)),
                 staffId != null ? UUID.fromString(staffId) : null);
     }

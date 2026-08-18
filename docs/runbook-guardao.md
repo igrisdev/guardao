@@ -419,6 +419,55 @@ docker start guardao-backend
 
 ---
 
+## Procedimiento · Crear un super-admin de Guardao
+
+Los super-admin son el personal interno de Guardao. **No existe ninguna ruta HTTP que los cree**, ni siquiera protegida: un endpoint capaz de fabricar cuentas con acceso a toda la plataforma sería un blanco permanente, y no hace falta, porque estas cuentas se crean una vez por entorno.
+
+Tampoco pertenecen a ninguna barbería. Guardao es la plataforma, no un negocio, así que su `business_id` va vacío — la base lo exige con la restricción `app_user_business_only_for_tenant_roles`.
+
+### Cómo se crea
+
+El backend lo crea al arrancar si encuentra estas dos variables de entorno. En Coolify se ponen en el entorno correspondiente:
+
+```
+GUARDAO_SUPERADMIN_EMAIL=nombre@guardao.co
+GUARDAO_SUPERADMIN_PASSWORD=<clave de al menos 12 caracteres>
+```
+
+> **Ojo con el nombre.** La propiedad es `guardao.super-admin.email`, pero la variable va sin guion: Spring convierte los puntos en guion bajo y **elimina** los guiones. Escribirla como `GUARDAO_SUPER_ADMIN_EMAIL` no falla ni avisa — simplemente no se lee y el seed no hace nada. La misma regla aplica a cualquier otra propiedad con guion (`guardao.cors.allowed-origins` → `GUARDAO_CORS_ALLOWEDORIGINS`).
+
+Reinicia el servicio. En el log verás:
+
+```
+Super-admin creado: nombre@guardao.co
+```
+
+Verifica que puede entrar con `POST /api/v1/auth/login` antes de seguir.
+
+### Después de crearlo
+
+1. **Quita las dos variables del entorno.** Dejarlas es guardar una contraseña en claro en la configuración de Coolify, a la vista de cualquiera con acceso al panel.
+2. **Cambia la contraseña en el primer inicio de sesión.**
+
+### Detalles que conviene saber
+
+- **Es idempotente.** Si el correo ya existe, el arranque no lo toca: no te devuelve la contraseña original si ya la cambiaste. Para crear otro super-admin, usa un correo distinto.
+- **Si la clave tiene menos de 12 caracteres, el arranque falla.** Es a propósito: mejor un despliegue detenido que una cuenta con acceso a todo mal protegida.
+- **Nunca pongas estas variables en un archivo del repositorio.** Quedaría en el historial de git, de donde no se borra de verdad.
+- **Un super-admin no tiene negocio, así que no puede usar los endpoints de una barbería** (`/api/v1/locations` y demás responden 403). El panel interno tiene los suyos, y llegan en la Etapa 9.
+
+### Para dar de baja a alguien del equipo
+
+No se borra la fila: se desactiva, porque sus acciones quedan en el historial.
+
+```sql
+UPDATE app_user SET is_active = false WHERE email = 'nombre@guardao.co';
+```
+
+El login lo rechaza de inmediato, y el refresco de sesión también, porque relee la cuenta en cada renovación.
+
+---
+
 ## Contactos y accesos
 
 | Recurso | Dónde |

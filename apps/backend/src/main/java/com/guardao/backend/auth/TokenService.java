@@ -55,8 +55,14 @@ public class TokenService {
                 .expiresAt(now.plus(properties.accessTokenMinutes(), ChronoUnit.MINUTES))
                 .subject(user.userId().toString())
                 .claim(CLAIM_TOKEN_TYPE, TYPE_ACCESS)
-                .claim(CLAIM_BUSINESS_ID, user.businessId().toString())
                 .claim(CLAIM_ROLE, user.role().name());
+
+        // Los SUPER_ADMIN no pertenecen a ninguna barberia, asi que su token
+        // no lleva negocio (GUA-24). Igual que con staff_id, el claim se
+        // omite en vez de enviarse nulo, que JwtClaimsSet no acepta.
+        if (user.businessId() != null) {
+            claims.claim(CLAIM_BUSINESS_ID, user.businessId().toString());
+        }
 
         // Solo los usuarios STAFF tienen barbero asociado. El claim se omite
         // en vez de enviarse nulo: JwtClaimsSet rechaza los valores nulos, y

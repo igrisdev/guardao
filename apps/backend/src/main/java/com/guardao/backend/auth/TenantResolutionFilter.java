@@ -47,7 +47,15 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
 
         if (autenticacion instanceof JwtAuthenticationToken jwtAuth && autenticacion.isAuthenticated()) {
             AuthenticatedUser usuario = CurrentUser.fromJwt(jwtAuth.getToken());
-            TenantContext.set(usuario.businessId());
+
+            // Los SUPER_ADMIN no tienen negocio (GUA-24), asi que el contexto
+            // queda vacio y sus consultas no se filtran. Es deliberado: el
+            // panel interno necesita ver todas las barberias. Por eso mismo,
+            // los endpoints de una barberia exigen OWNER o STAFF y no aceptan
+            // a un SUPER_ADMIN, que ahi no tendria negocio con que trabajar.
+            if (usuario.businessId() != null) {
+                TenantContext.set(usuario.businessId());
+            }
         }
     }
 }

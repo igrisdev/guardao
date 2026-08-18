@@ -78,12 +78,20 @@ public class UserAccountService {
     }
 
     private UserAccount toAccount(User user) {
-        String slug = businesses.findById(user.getBusinessId())
+        return new UserAccount(
+                user.getId(), user.getBusinessId(), slugDelNegocio(user), user.getRole(),
+                user.getStaffId());
+    }
+
+    /** Nulo para los SUPER_ADMIN: no pertenecen a ninguna barberia (GUA-24). */
+    private String slugDelNegocio(User user) {
+        if (user.getBusinessId() == null) {
+            return null;
+        }
+
+        return businesses.findById(user.getBusinessId())
                 .map(Business::getSlug)
                 .orElseThrow(() -> new IllegalStateException(
                         "El usuario " + user.getId() + " apunta a un negocio que no existe"));
-
-        return new UserAccount(
-                user.getId(), user.getBusinessId(), slug, user.getRole(), user.getStaffId());
     }
 }

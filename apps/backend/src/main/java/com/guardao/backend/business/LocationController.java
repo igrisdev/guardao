@@ -32,6 +32,10 @@ import org.springframework.web.bind.annotation.RestController;
  * Consultar puede cualquiera del negocio, porque un barbero necesita saber en
  * que sedes trabaja. Crear, editar y desactivar es solo del dueño: son
  * decisiones de configuracion del negocio.
+ *
+ * Un SUPER_ADMIN no entra aqui: no pertenece a ninguna barberia (GUA-24), asi
+ * que no hay negocio del que listar sedes. El panel interno de Guardao tiene
+ * sus propios endpoints (Etapa 9).
  */
 @RestController
 @RequestMapping("/api/v1/locations")
@@ -46,6 +50,7 @@ public class LocationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
     @Operation(summary = "Lista las sedes del negocio")
     public List<LocationResponse> list(
             @RequestParam(name = "activas", defaultValue = "false") boolean soloActivas) {
@@ -53,6 +58,7 @@ public class LocationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('OWNER', 'STAFF')")
     @Operation(summary = "Consulta una sede")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "La sede"),
