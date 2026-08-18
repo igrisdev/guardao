@@ -1,0 +1,32 @@
+# Perfil local — maquina de cada desarrollador.
+#
+# Los valores por defecto coinciden con docker-compose.yml, para que el
+# proyecto arranque recien clonado sin configurar nada.
+# Se pueden sobrescribir con variables de entorno o un archivo .env.
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/guardao}
+    username: ${DB_USERNAME:guardao}
+    password: ${DB_PASSWORD:guardao}
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    # En local puede haber bases creadas antes de la primera migracion
+    baseline-on-migrate: true
+
+guardao:
+  jwt:
+    # Secreto de desarrollo. No sirve en ningun otro entorno y no importa
+    # que este en el repositorio: staging y produccion lo exigen por entorno.
+    secret: ${JWT_SECRET:desarrollo-local-no-usar-fuera-de-esta-maquina-000000}
+
+logging:
+  level:
+    com.guardao: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.springframework.security: DEBUG

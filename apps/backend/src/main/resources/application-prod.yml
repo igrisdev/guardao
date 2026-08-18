@@ -1,0 +1,36 @@
+# Perfil prod — produccion.
+#
+# Ninguna variable tiene valor por defecto. Si falta una, la aplicacion
+# no arranca: es preferible a que levante contra la base equivocada.
+#
+# Diferencias frente a staging:
+#   - Swagger UI deshabilitado (no se expone la forma de la API)
+#   - Sin logs de SQL ni de Spring Security (System Design 7.1)
+#   - Pool de conexiones mas grande
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+
+  flyway:
+    baseline-on-migrate: false
+
+guardao:
+  jwt:
+    secret: ${JWT_SECRET}
+
+# La documentacion de la API no se publica en produccion
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.guardao: INFO

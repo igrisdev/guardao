@@ -1,0 +1,31 @@
+# Perfil test — tests automatizados (local y CI).
+#
+# No declara datasource: la base la levanta Testcontainers y su URL se
+# inyecta en tiempo de ejecucion (@ServiceConnection). El montaje completo
+# del entorno de pruebas es GUA-17.
+#
+# Nunca debe apuntar a una base de datos real.
+
+spring:
+  jpa:
+    hibernate:
+      # Los tests validan contra el esquema que crea Flyway, igual que produccion.
+      # Si un test no pasa por diferencias de esquema, se corrige la migracion.
+      ddl-auto: validate
+
+  flyway:
+    enabled: true
+    # La base siempre nace vacia, no hay nada que baselinear
+    baseline-on-migrate: false
+
+guardao:
+  jwt:
+    secret: secreto-solo-para-tests-000000000000000000000000000000
+    access-token-minutes: 5
+    refresh-token-days: 1
+
+logging:
+  level:
+    root: WARN
+    com.guardao: INFO
+    org.testcontainers: INFO

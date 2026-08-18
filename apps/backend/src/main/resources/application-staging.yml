@@ -1,0 +1,28 @@
+# Perfil staging — VPS, entorno de pruebas con datos falsos.
+#
+# Ninguna variable tiene valor por defecto: si falta una, la aplicacion
+# no arranca. Es deliberado — es preferible un fallo al iniciar que un
+# servicio corriendo contra la base equivocada.
+#
+# Staging y produccion NUNCA comparten base de datos (System Design 2.3).
+# Wompi se usa con llaves de sandbox, nunca con las reales.
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+
+  flyway:
+    baseline-on-migrate: false
+
+guardao:
+  jwt:
+    secret: ${JWT_SECRET}
+
+logging:
+  level:
+    root: INFO
+    com.guardao: DEBUG

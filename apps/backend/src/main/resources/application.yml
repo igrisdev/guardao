@@ -1,22 +1,49 @@
+# Configuracion comun a todos los perfiles.
+# Lo especifico de cada entorno vive en application-{perfil}.yml
+#
+# Perfiles: local | test | staging | prod
+# Se elige con SPRING_PROFILES_ACTIVE. Si no se define, arranca en local.
+
 spring:
   application:
     name: backend
   profiles:
-    active: local
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
----
-spring:
-  config:
-    activate:
-      on-profile: local
-  datasource:
-    url: jdbc:postgresql://localhost:5432/guardao
-    username: guardao
-    password: guardao
   jpa:
     hibernate:
+      # GUA-9: nunca cambiar a update. El esquema lo gobierna Flyway (ADR-007)
       ddl-auto: validate
     open-in-view: false
+
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+# Zona horaria del negocio. Las marcas de tiempo se guardan en timestamptz;
+# esto solo afecta como se formatean las horas de agenda.
+guardao:
+  timezone: America/Bogota
+  jwt:
+    # El secreto NO se declara aqui: cada perfil lo define por separado,
+    # para que staging y prod fallen al arrancar si falta la variable.
+    # La emision y validacion del token es GUA-11.
+    access-token-minutes: ${JWT_ACCESS_MINUTES:30}
+    refresh-token-days: ${JWT_REFRESH_DAYS:30}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
