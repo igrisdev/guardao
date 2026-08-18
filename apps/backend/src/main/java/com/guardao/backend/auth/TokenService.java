@@ -49,19 +49,23 @@ public class TokenService {
     public String createAccessToken(AuthenticatedUser user) {
         Instant now = Instant.now();
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
                 .issuer(ISSUER)
                 .issuedAt(now)
                 .expiresAt(now.plus(properties.accessTokenMinutes(), ChronoUnit.MINUTES))
                 .subject(user.userId().toString())
                 .claim(CLAIM_TOKEN_TYPE, TYPE_ACCESS)
                 .claim(CLAIM_BUSINESS_ID, user.businessId().toString())
-                .claim(CLAIM_ROLE, user.role().name())
-                // Puede ser nulo: solo los usuarios STAFF tienen barbero asociado
-                .claim(CLAIM_STAFF_ID, user.staffId() != null ? user.staffId().toString() : null)
-                .build();
+                .claim(CLAIM_ROLE, user.role().name());
 
-        return encode(claims);
+        // Solo los usuarios STAFF tienen barbero asociado. El claim se omite
+        // en vez de enviarse nulo: JwtClaimsSet rechaza los valores nulos, y
+        // CurrentUser ya lee su ausencia como "sin barbero".
+        if (user.staffId() != null) {
+            claims.claim(CLAIM_STAFF_ID, user.staffId().toString());
+        }
+
+        return encode(claims.build());
     }
 
     /**

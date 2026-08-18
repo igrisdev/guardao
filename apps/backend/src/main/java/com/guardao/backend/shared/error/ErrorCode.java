@@ -24,6 +24,10 @@ public enum ErrorCode {
     // --- Negocio ---
     SLUG_TAKEN(HttpStatus.CONFLICT,
             "Ese nombre de URL ya esta en uso"),
+    // Va separado de SLUG_TAKEN para que el formulario de registro sepa cual
+    // de los dos campos marcar en rojo (GUA-20)
+    EMAIL_TAKEN(HttpStatus.CONFLICT,
+            "Ese correo ya tiene una cuenta"),
 
     // --- Pagos ---
     INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED,
