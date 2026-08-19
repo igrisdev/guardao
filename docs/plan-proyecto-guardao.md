@@ -62,8 +62,10 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 - La personalización es solo de colores: no incluye fuentes, tamaños ni disposición de la página
 - Aplica únicamente a la página pública; el dashboard mantiene siempre su paleta oscura
 
-**Cancelación y reprogramación del cliente**
-- Sin necesidad de crear cuenta: el cliente recibe un enlace privado (token único por cita) donde puede ver, cancelar o reprogramar su reserva
+**Confirmación, cancelación y reprogramación del cliente**
+- Sin necesidad de crear cuenta: el cliente recibe un enlace privado (token único por cita) donde puede ver, **confirmar que va a asistir**, cancelar o reprogramar su reserva
+- Confirmar pasa la cita de pendiente a confirmada. No cambia la disponibilidad —el horario está ocupado desde que se reservó— pero le dice a la barbería con quién puede contar y a quién conviene llamar
+- El recordatorio previo a la cita lleva ese mismo enlace: es el momento en que confirmar sirve de algo
 - Reprogramar pasa por la misma validación de disponibilidad que una reserva nueva
 
 **Notificaciones**
@@ -89,11 +91,46 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 - Si un cliente acumula 3 inasistencias seguidas, el sistema exige adelanto obligatorio para poder reservar de nuevo
 
 **Referidos**
-- Código de referido único por barbería
-- Gana un monto fijo por cada barbería referida que se registre y pague, más el 10% de los pagos de suscripción siguientes de esa barbería
+- Código de referido único por barbería, generado al registrarse
+- Cada barbería referida que esté pagando descuenta **10 puntos porcentuales de la suscripción de quien la refirió**, durante sus primeros **3 pagos** — si se atrasa un mes, el cupo se pausa y retoma cuando pague
+- Los descuentos se suman: tres referidos pagando son 30% menos. Al llegar a 100% el mes sale gratis, y lo que pase de ahí se pierde — no queda saldo a favor ni se paga en efectivo
+- Cada mes se cuenta de nuevo. Como el beneficio de cada referido dura 3 meses, mantenerlo exige seguir refiriendo: es un incentivo recurrente, no una renta
+- El pago al referidor es siempre un descuento en su propia factura. Guardao nunca le transfiere dinero, lo que evita toda una operación de pagos salientes
 
 **Panel admin interno (Guardao)**
 - Ver cuántas barberías están activas en la plataforma, estado de sus suscripciones, métricas generales
+
+**Planes de suscripción**
+
+Cinco planes. El detalle y el porqué de cada límite están en el [ADR-012](./adr/012-planes-precios-descuentos.md).
+
+| | **Prueba** | **Inicial** | **Básico** | **Profesional** | **Empresarial** |
+|---|---|---|---|---|---|
+| Precio | Gratis, 15 días | 25.000 COP | 50.000 COP | 100.000 COP | Desde 120.000, a convenir |
+| Sedes | 1 | 1 | 1 | hasta 3 | sin límite |
+| Barberos | hasta 6 | 1 | hasta 6 | sin límite | sin límite |
+| Agenda y reservas | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Página pública de reservas | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Confirmar, cancelar y reprogramar por enlace | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Cobros con Wompi y adelantos | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Notificaciones por correo | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Notificaciones por WhatsApp | cupo medio | cupo bajo | cupo medio | cupo alto | volumen acordado |
+| Programa de lealtad | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Catálogo de productos y carrito | ✅ | — | ✅ | ✅ | ✅ |
+| Galería de Instagram y TikTok | ✅ | — | ✅ | ✅ | ✅ |
+| Informes | completos | básicos | completos | completos | completos |
+
+La prueba es exactamente el plan **Básico** durante 15 días: se prueba lo que la mayoría va a contratar, no un plan que nadie tiene.
+
+**Inicial** es para el barbero que trabaja solo. **Básico**, la barbería con equipo. **Profesional**, quien ya tiene varias sedes. **Empresarial** no se contrata desde la aplicación: quien tiene ocho sedes necesita una conversación, no un formulario, y su precio se acuerda uno a uno.
+
+Lo que ve el cliente final de la barbería —reservar, confirmar, cancelar, reprogramar, recibir la confirmación— **es igual en todos los planes**: quien reserva un corte no es cliente de Guardao y no tiene por qué notar en qué plan está la barbería. Lo que separa los planes es el costo variable de WhatsApp y el tamaño del negocio.
+
+**Descuentos.** Un porcentaje con vencimiento sobre la suscripción, que al agotarse devuelve el cobro al precio normal por sí solo. Hay dos orígenes y **nunca se acumulan entre sí**: el código de referido de otra barbería, o un código de promoción que Guardao crea desde su panel interno con vigencia y tope de usos. Si alguien llega con los dos, manda el de referido.
+
+**Al cambiar de plan.** Subir aplica de inmediato y se cobra el precio nuevo en el siguiente ciclo. Bajar se pide, pero solo se ejecuta cuando la barbería queda dentro de los límites del plan destino: la aplicación le muestra exactamente qué sobra y lo va marcando a medida que lo resuelve. Nada se desactiva solo, y bajar de plan nunca borra datos: la lealtad, los productos y las fotos quedan guardados y reaparecen si vuelve a subir.
+
+Al terminar la prueba o vencerse el pago, la cuenta pasa a solo lectura: deja de recibir reservas nuevas, pero las citas ya agendadas siguen visibles y los enlaces que ya recibieron los clientes siguen funcionando.
 
 ## 4. Modelo de datos
 
@@ -313,6 +350,10 @@ El tema vive en `BUSINESS` y no en `LOCATION` porque la marca es del negocio: un
 
 `SCHEDULE.staff_id` es opcional: nulo significa horario general de la sede, con valor significa el horario específico de ese barbero. `BLOCK` cubre lo puntual (vacaciones, un bloqueo de una tarde) que no encaja en un horario recurrente semanal. `USER.staff_id` solo se llena cuando `role = STAFF`, y es lo que conecta a un barbero con su propio inicio de sesión. `PRODUCT.stock` es opcional: nulo significa que el negocio no controla inventario (stock ilimitado); con un número, el checkout lo valida y lo descuenta.
 
+`USER.business_id` es nulo únicamente en los `SUPER_ADMIN`: son personal interno de Guardao, que es la plataforma y no una barbería, así que no cuelgan de ningún negocio. La base lo exige en ambos sentidos.
+
+**Lo que le falta a este modelo.** El diagrama es el esquema que existe hoy. Los planes de suscripción ([ADR-012](./adr/012-planes-precios-descuentos.md)) agregan en la Etapa 5 el precio pactado y el descuento vigente sobre `SUBSCRIPTION`, los topes negociados del plan Empresarial, y una tabla `PROMO_CODE` con los códigos de campaña que crea Guardao desde su panel. Todavía no están migrados.
+
 ## 5. Roadmap, en 4 frentes escalonados
 
 El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y **Deploy**. Las etapas están numeradas para que Backend, Frontend y Testing se correspondan entre sí — la etapa *N* de cada frente trabaja sobre lo mismo que construyen las otras dos en esa etapa. Deploy corre por su cuenta: su etapa 0 (infraestructura) va primero en el tiempo, y sus etapas siguientes acompañan cada entrega en paralelo, sin numeración compartida con las otras tres.
@@ -351,13 +392,13 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Endpoint de registro de barbería (crea `Business` + `Location` inicial + `User` con rol `OWNER`)
 - Endpoint de login (devuelve JWT) y de refresh token
 - Middleware que resuelve el `business_id` del usuario autenticado y lo aplica a cada consulta (aislamiento multi-tenant)
-- Endpoint para que el `OWNER` cree usuarios `STAFF` vinculados a un barbero existente (`User.staff_id`)
 - Mecanismo para crear usuarios `SUPER_ADMIN` (solo vía script/seed, nunca público)
 - CRUD de sedes (`Location`): crear, editar, listar, eliminar
 
 ### Etapa 2 — Staff, servicios, habilidades y horarios individuales
 - Entidades `Staff`, `Service`, `Skill`
 - CRUD de staff por sede
+- Endpoint para que el `OWNER` cree usuarios `STAFF` vinculados a un barbero existente (`User.staff_id`). Movido aquí desde la Etapa 1: `app_user.staff_id` apunta por llave foránea a `staff`, y un `CHECK` exige que todo usuario `STAFF` traiga el suyo, así que no se puede crear ninguno antes de que exista la entidad `Staff`
 - CRUD de servicios por sede (con duración en pasos de 30 minutos)
 - Endpoint para asignar/quitar habilidades entre staff y servicios
 - Entidad y CRUD de `Schedule` (horario general de sede, y horario específico opcional por barbero)
@@ -381,7 +422,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Endpoint público: servicios disponibles con staff filtrado por `Skill` según el servicio elegido
 - Endpoint público: horarios disponibles según sede/staff/fecha
 - Endpoint público: crear reserva — busca o crea `Client` por teléfono, valida si `consecutive_no_shows >= 3` para exigir adelanto, crea la `Appointment` con su `manage_token` único
-- Endpoint público (por token): ver el detalle de una cita, cancelarla o reprogramarla — sin necesidad de login del cliente
+- Endpoint público (por token): ver el detalle de una cita, confirmar la asistencia, cancelarla o reprogramarla — sin necesidad de login del cliente
 - Reprogramar revalida disponibilidad igual que una reserva nueva
 - Rate limiting básico en los endpoints públicos
 - Definir las 5 paletas predefinidas como constantes compartidas, y el endpoint para que el negocio guarde su tema (preset elegido o los 5 colores personalizados)
@@ -469,7 +510,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 - Aviso de "requiere adelanto" cuando aplica la regla de 3 inasistencias
 - Sección de catálogo de productos con imagen
 - Galería de fotos/videos (Instagram/TikTok)
-- Pantalla de gestión de cita vía enlace privado: ver, cancelar o reprogramar sin login
+- Pantalla de gestión de cita vía enlace privado: ver, confirmar asistencia, cancelar o reprogramar sin login
 - Construir toda la página pública sobre tokens de color (variables CSS), nunca con colores fijos — el layout público inyecta las variables desde el servidor, así que no hay parpadeo de color al cargar
 - Pantalla de configuración del tema: las 5 paletas como tarjetas de vista previa, selector de color por token cuando elige "personalizada", y previsualización en vivo de la página
 - Advertencia de contraste insuficiente cuando una combinación personalizada deja el texto difícil de leer — es un aviso, no un bloqueo: es su marca
@@ -515,12 +556,13 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 
 ### Etapa 1 — Auth, aislamiento multi-tenant y seguridad básica
 - Tests unitarios: generación y validación de JWT
-- Tests de integración: registro, login, creación de usuarios `STAFF` vinculados a su staff
+- Tests de integración: registro, login y refresco de sesión
 - Tests de seguridad: acceso sin token, token inválido o expirado, intento de leer datos de otro `business_id`
 
 ### Etapa 2 — Disponibilidad, staff, servicios y habilidades
 - Tests unitarios: cálculo de disponibilidad cruzando horario general + horario individual + bloqueos
 - Tests de integración: CRUD de staff y servicios, asignación de habilidades (`Skill`)
+- Tests de integración: creación de usuarios `STAFF` vinculados a su staff, y que ese usuario pueda iniciar sesión (acompaña al endpoint movido desde la Etapa 1)
 
 ### Etapa 3 — Motor de reservas
 - Tests específicos del motor: solapamiento de horarios, doble reserva simultánea (verificando que la restricción `EXCLUDE` rechaza el conflicto), revalidación dentro de la transacción, duración variable por servicio

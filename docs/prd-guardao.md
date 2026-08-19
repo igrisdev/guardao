@@ -32,7 +32,7 @@ Guardao es una plataforma de reservas con pagos integrados para negocios en Colo
 |---|---|---|---|
 | **Dueño de barbería** | `OWNER` | Configura sedes, barberos, servicios, horarios y precios. Ve informes. Paga la suscripción. | Que sea fácil de configurar y que se note en menos inasistencias |
 | **Barbero** | `STAFF` | Ve su agenda del día, marca citas como completadas o no asistidas, cobra. | Que su agenda sea confiable y que nadie más toque sus citas |
-| **Cliente final** | *sin cuenta* | Reserva desde el link público. Cancela o reprograma desde su enlace privado. | Reservar en menos de un minuto, sin registrarse |
+| **Cliente final** | *sin cuenta* | Reserva desde el link público. Confirma que asistirá, cancela o reprograma desde su enlace privado. | Reservar en menos de un minuto, sin registrarse |
 | **Equipo Guardao** | `SUPER_ADMIN` | Ve barberías activas, estado de suscripciones y métricas. | Saber cuánto se factura y quién está por caerse |
 
 **Decisión de producto clave: el cliente final no tiene cuenta.** Se le reconoce por número de teléfono. Obligar a registrarse para cortarse el pelo es fricción que cuesta reservas.
@@ -65,7 +65,7 @@ Guardao es una plataforma de reservas con pagos integrados para negocios en Colo
 - Los horarios ocupados se muestran **deshabilitados, no ocultos**
 - Reconoce clientes recurrentes por teléfono
 - **Personalización de colores**: 5 paletas predefinidas más una personalizable
-- Cancelación y reprogramación por enlace privado con token, sin login
+- Confirmación de asistencia, cancelación y reprogramación por enlace privado con token, sin login
 
 ### 3.5 Notificaciones
 - Confirmación, recordatorio, cancelación, reprogramación y pago recibido
@@ -81,6 +81,7 @@ Guardao es una plataforma de reservas con pagos integrados para negocios en Colo
 ### 3.7 Control de inasistencias
 - Contador de citas asistidas e inasistencias
 - **3 inasistencias consecutivas → adelanto obligatorio para volver a reservar**
+- El recordatorio previo lleva el enlace privado con un botón para **confirmar la asistencia**. Confirmar no cambia la disponibilidad, porque el horario ya estaba ocupado; sirve para que la barbería sepa con quién puede contar y a quién conviene llamar antes de que el puesto se pierda
 
 ---
 

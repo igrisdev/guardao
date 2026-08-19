@@ -143,7 +143,7 @@ El de `(staff_id, scheduled_at)` es el que sostiene el motor de disponibilidad, 
 | Ver informes | ✅ | ❌ | ❌ | ❌ |
 | Métricas de toda la plataforma | ❌ | ❌ | ✅ | ❌ |
 | Reservar por la página pública | — | — | — | ✅ |
-| Gestionar cita con `manage_token` | — | — | — | ✅ |
+| Gestionar cita con `manage_token` (confirmar, cancelar, reprogramar) | — | — | — | ✅ |
 
 La regla de "solo el barbero asignado completa su cita" se valida comparando `staff_id` del token contra `staff_id` de la cita. **No basta con ocultar el botón en la interfaz.**
 

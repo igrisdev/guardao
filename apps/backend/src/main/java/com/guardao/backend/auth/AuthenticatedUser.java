@@ -9,6 +9,8 @@ import java.util.UUID;
  * Aceptarlo del cliente seria permitir que cualquiera lea datos de otro
  * negocio (ADR-004). El filtrado automatico por businessId es GUA-22.
  *
+ * @param businessId nulo solo en los SUPER_ADMIN: son personal interno de
+ *                   Guardao, que es la plataforma y no una barberia (GUA-24).
  * @param staffId solo tiene valor cuando el rol es STAFF; es lo que permite
  *                validar que un barbero solo complete sus propias citas.
  */

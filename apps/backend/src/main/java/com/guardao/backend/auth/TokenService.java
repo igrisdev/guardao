@@ -49,19 +49,29 @@ public class TokenService {
     public String createAccessToken(AuthenticatedUser user) {
         Instant now = Instant.now();
 
-        JwtClaimsSet claims = JwtClaimsSet.builder()
+        JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
                 .issuer(ISSUER)
                 .issuedAt(now)
                 .expiresAt(now.plus(properties.accessTokenMinutes(), ChronoUnit.MINUTES))
                 .subject(user.userId().toString())
                 .claim(CLAIM_TOKEN_TYPE, TYPE_ACCESS)
-                .claim(CLAIM_BUSINESS_ID, user.businessId().toString())
-                .claim(CLAIM_ROLE, user.role().name())
-                // Puede ser nulo: solo los usuarios STAFF tienen barbero asociado
-                .claim(CLAIM_STAFF_ID, user.staffId() != null ? user.staffId().toString() : null)
-                .build();
+                .claim(CLAIM_ROLE, user.role().name());
 
-        return encode(claims);
+        // Los SUPER_ADMIN no pertenecen a ninguna barberia, asi que su token
+        // no lleva negocio (GUA-24). Igual que con staff_id, el claim se
+        // omite en vez de enviarse nulo, que JwtClaimsSet no acepta.
+        if (user.businessId() != null) {
+            claims.claim(CLAIM_BUSINESS_ID, user.businessId().toString());
+        }
+
+        // Solo los usuarios STAFF tienen barbero asociado. El claim se omite
+        // en vez de enviarse nulo: JwtClaimsSet rechaza los valores nulos, y
+        // CurrentUser ya lee su ausencia como "sin barbero".
+        if (user.staffId() != null) {
+            claims.claim(CLAIM_STAFF_ID, user.staffId().toString());
+        }
+
+        return encode(claims.build());
     }
 
     /**
@@ -88,6 +98,15 @@ public class TokenService {
     /** Un token de refresco no sirve para llamar a la API. */
     public static boolean isAccessToken(Jwt jwt) {
         return TYPE_ACCESS.equals(jwt.getClaimAsString(CLAIM_TOKEN_TYPE));
+    }
+
+    /**
+     * Y un token de acceso tampoco sirve para renovar la sesion. Se comprueba
+     * que el tipo sea refresco, en vez de dar por bueno "lo que no es acceso":
+     * un token sin el claim de tipo no es ninguno de los dos.
+     */
+    public static boolean isRefreshToken(Jwt jwt) {
+        return TYPE_REFRESH.equals(jwt.getClaimAsString(CLAIM_TOKEN_TYPE));
     }
 
     private String encode(JwtClaimsSet claims) {
