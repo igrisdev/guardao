@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useLayoutEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 
 import { isAuthenticated } from "@/lib/api/auth";
 
-// Mismo motivo que en RequireSession: no hay evento de "cambio" de
-// localStorage dentro de la misma pestaña que valga la pena escuchar, y
-// login/logout ya provocan una navegacion que vuelve a montar este
-// componente.
-function subscribe() {
+/**
+ * Fuerza una relectura de isAuthenticated() apenas el componente se monta en
+ * el cliente. Ver el comentario largo en RequireSession
+ * (components/dashboard/require-session.tsx), su espejo: solo afecta que
+ * tan rapido se pinta el formulario, no la decision de redirigir.
+ */
+function subscribe(callback: () => void) {
+  callback();
   return () => {};
 }
 
@@ -17,35 +20,40 @@ function getSnapshot() {
   return isAuthenticated();
 }
 
-// En el servidor no hay localStorage, asi que el snapshot del servidor
-// siempre es "no autenticado". Eso deja pasar el render inicial del
-// formulario de registro para el caso comun (un visitante sin sesion) sin
-// parpadeo, al costo de un parpadeo breve para quien ya tiene sesion y
-// entra directo a /register (se corrige en el primer render del cliente).
+// En el servidor no existe localStorage: no hay sesion que leer, asi que
+// el snapshot del servidor siempre es "no autenticado". Evita el
+// parpadeo de contenido protegido antes de que el cliente confirme la
+// sesion real.
 function getServerSnapshot() {
   return false;
 }
 
 /**
- * Guard de las rutas publicas de autenticacion (registro, y a futuro login).
+ * Guard de las rutas publicas de autenticacion (registro y login).
  *
  * Espejo de RequireSession (components/dashboard/require-session.tsx): en
  * vez de exigir sesion, la rechaza. Quien ya tiene una cuenta iniciada no
- * deberia poder volver a pasar por el registro, asi que se le manda directo
- * al dashboard.
+ * deberia poder volver a pasar por el registro o el login, asi que se le
+ * manda directo al dashboard.
+ *
+ * GUA-28 — igual que en RequireSession, la decision de redirigir usa
+ * isAuthenticated() leido directo en un useLayoutEffect (nunca el
+ * `authenticated` de useSyncExternalStore, que en la hidratacion de una
+ * carga completa de pagina puede arrancar en un valor que todavia no es el
+ * real). Ver el comentario largo alla para el porque completo.
  */
 export function RequireGuest({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const authenticated = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    if (authenticated) {
+  useLayoutEffect(() => {
+    if (isAuthenticated()) {
       router.replace("/dashboard");
     }
-  }, [authenticated, router]);
+  }, [router]);
 
   // Con sesion confirmada no se renderiza el formulario: evita el parpadeo
-  // del registro antes del redirect.
+  // del registro/login antes del redirect.
   if (authenticated) return null;
 
   return <>{children}</>;
