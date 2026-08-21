@@ -43,7 +43,15 @@ export function RequireSession({ children }: { children: React.ReactNode }) {
   const authenticated = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
-    if (!authenticated) {
+    // Se vuelve a preguntar aqui en vez de mirar `authenticated`, y la
+    // diferencia no es cosmetica: durante la hidratacion ese valor todavia es
+    // el del servidor, que es siempre false (ver getServerSnapshot), y este
+    // efecto corre ANTES de que React lo reemplace por el del cliente.
+    // Mirandolo, la primera pasada redirige a /login aunque haya sesion
+    // valida guardada, y el dashboard se vuelve inalcanzable. Leer
+    // localStorage aqui ya devuelve lo que hay de verdad, porque el efecto
+    // solo corre en el navegador.
+    if (!isAuthenticated()) {
       router.replace("/login");
     }
   }, [authenticated, router]);
