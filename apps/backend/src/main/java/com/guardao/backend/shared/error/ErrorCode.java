@@ -37,6 +37,18 @@ public enum ErrorCode {
     INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED,
             "Firma del webhook invalida"),
 
+    // --- Horarios y bloqueos ---
+    // Un dia puede tener varias franjas (jornada partida), pero no cruzadas:
+    // dos franjas que se solapan hacen que el mismo hueco se ofrezca dos
+    // veces al calcular la disponibilidad (GUA-33)
+    OVERLAPPING_SCHEDULE(HttpStatus.CONFLICT,
+            "Esa franja se cruza con otra del mismo dia"),
+    // Cierre antes que apertura, o fin antes que inicio. Va aparte de
+    // VALIDATION_ERROR porque no es un campo mal escrito sino la relacion
+    // entre dos: el formulario tiene que marcar los dos extremos
+    INVALID_TIME_RANGE(HttpStatus.BAD_REQUEST,
+            "La hora final debe ser posterior a la inicial"),
+
     // --- Transversales ---
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST,
             "Hay campos con datos invalidos"),
