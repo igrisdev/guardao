@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 
 import { HttpError, login } from "@/lib/api";
 import {
@@ -92,7 +92,10 @@ export default function LoginPage() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Inicia sesión</CardTitle>
+        <span className="mb-2 flex size-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+          <Lock className="size-5" />
+        </span>
+        <CardTitle className="text-xl">Inicia sesión</CardTitle>
         <CardDescription>Entra con tu correo y contraseña.</CardDescription>
       </CardHeader>
       <CardContent>

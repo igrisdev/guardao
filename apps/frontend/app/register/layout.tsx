@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { RequireGuest } from "@/components/auth/require-guest";
+import { BrandMark } from "@/components/brand-mark";
 
 /**
  * Registro de una barberia nueva: ruta publica, pero no para quien ya tiene
@@ -14,11 +15,11 @@ export default function RegisterLayout({ children }: LayoutProps<"/register">) {
       <div className="flex min-h-svh flex-col bg-background">
         <header className="border-b border-border">
           <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 py-4">
-            <Link href="/" className="text-sm font-semibold tracking-tight text-foreground">
-              Guardao
+            <Link href="/">
+              <BrandMark />
             </Link>
             <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground">
-              ¿Ya tienes cuenta? Inicia sesión
+              ¿Ya tienes cuenta? <span className="font-medium text-primary">Inicia sesión</span>
             </Link>
           </div>
         </header>
