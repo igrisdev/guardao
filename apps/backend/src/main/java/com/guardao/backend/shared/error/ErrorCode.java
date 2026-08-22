@@ -32,6 +32,15 @@ public enum ErrorCode {
     // publica se queda sin nada que ofrecer (GUA-25)
     LAST_ACTIVE_LOCATION(HttpStatus.CONFLICT,
             "No puede desactivar la unica sede activa del negocio"),
+    // Se responde igual para un barbero inexistente que para uno de otro
+    // negocio: distinguirlos revelaria que ese identificador existe en otra
+    // barberia (GUA-23)
+    STAFF_NOT_FOUND(HttpStatus.NOT_FOUND,
+            "Ese barbero no existe en su negocio"),
+    // Cada barbero tiene un solo acceso: dos logins para el mismo barbero
+    // enredarian quien completa su cita (GUA-23)
+    STAFF_ALREADY_HAS_LOGIN(HttpStatus.CONFLICT,
+            "Ese barbero ya tiene un acceso creado"),
 
     // --- Pagos ---
     INVALID_WEBHOOK_SIGNATURE(HttpStatus.UNAUTHORIZED,

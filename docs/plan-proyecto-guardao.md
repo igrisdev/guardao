@@ -59,6 +59,7 @@ No incluye ningún chatbot ni asistente de IA — se descartó explícitamente l
 **Personalización visual de la página pública**
 - Cada barbería elige desde su dashboard los colores con los que sus clientes ven la página de reservas
 - 5 paletas predefinidas, más una opción "personalizada" donde puede ajustar cada color a mano
+- La paleta por defecto es **Guardao Oscuro**, el tema del producto (sección 6): un negocio que nunca entre a esa pantalla se ve así
 - La personalización es solo de colores: no incluye fuentes, tamaños ni disposición de la página
 - Aplica únicamente a la página pública; el dashboard mantiene siempre su paleta oscura
 
@@ -342,7 +343,7 @@ Los tokens son semánticos, no colores sueltos, para que ninguna combinación de
 | `surface` | Tarjetas, calendario, formulario |
 | `foreground` | Texto principal |
 
-El resto de colores (bordes, texto secundario, estado deshabilitado) se derivan por opacidad de esos cinco.
+El resto de colores (bordes, texto secundario, estado deshabilitado) se derivan por opacidad de esos cinco. Son un subconjunto del sistema de diseño completo (sección 6): lo que el negocio elige es su marca, no el resto de la interfaz.
 
 El tema vive en `BUSINESS` y no en `LOCATION` porque la marca es del negocio: una barbería con tres sedes sigue siendo una sola página con selector de sede, no tres identidades visuales.
 
@@ -477,7 +478,7 @@ El proyecto avanza en cuatro frentes: **Backend**, **Frontend**, **Testing** y *
 ## 5.2 Frontend (Next.js)
 
 ### Etapa 0 — Setup del proyecto
-- Crear proyecto Next.js (App Router) + Tailwind + shadcn/ui, replicando la paleta oscura ya diseñada
+- Crear proyecto Next.js (App Router) + Tailwind + shadcn/ui, con los tokens de Guardao Oscuro (sección 6) cargados como variables CSS desde el primer commit
 - Cliente HTTP centralizado con manejo de JWT (guardar token, adjuntarlo en cada request, refresh)
 - Layout base del dashboard (sidebar sin Luna IA ni Conversaciones) y layout de la página pública
 - Rutas protegidas (dashboard) vs. públicas (booking)
@@ -680,3 +681,91 @@ Las credenciales (JWT secret, llaves de Wompi, credenciales de base de datos) se
 - Revisión periódica de costos de infraestructura a medida que crecen las cuentas activas
 
 
+---
+
+## 6. Sistema de diseño
+
+Toda interfaz de Guardao —página pública de reservas, dashboard del dueño, agenda del barbero y panel interno— se dibuja con los tokens de esta sección. No es una guía de estilo opcional: es lo que evita que cada pantalla nueva invente sus propios grises y terminemos con cinco tonos de "fondo de tarjeta" ligeramente distintos.
+
+El tema por defecto se llama **Guardao Oscuro**. Es el que ve un negocio recién registrado y el que se usa en todas las capturas y mockups del proyecto.
+
+### 6.1 Colores
+
+Los tokens son **semánticos**: se usa `surface`, no "gris oscuro". Así, cuando una barbería cambie su paleta, la misma pantalla sigue funcionando sin tocar una sola clase.
+
+| Token | Hex | Para qué |
+|---|---|---|
+| `background` | `#0d0d0d` | Fondo de la página |
+| `surface` (`card`, `popover`) | `#1a1a1a` | Tarjetas: reserva, resumen, producto, calendario |
+| `secondary` | `#242424` | Elemento sobre una tarjeta: horario sin elegir, chip, avatar |
+| `muted` | `#1f1f1f` | Fondo de lo deshabilitado |
+| `border` (`input`) | `#2a2a2a` | Borde de 1px de tarjetas, campos y botones secundarios |
+| `foreground` | `#f2f2f0` | Texto principal, títulos, precios |
+| `muted-foreground` | `#a1a1a1` | Texto secundario: lema, dirección, duración, descripciones |
+| `primary` | `#c3a95b` | Dorado de marca: botón principal, horario elegido, borde de lo seleccionado, precios de producto |
+| `primary-foreground` | `#1c1710` | Texto sobre el dorado. Es oscuro, no blanco: el dorado es claro y el blanco encima no se lee |
+| `accent` | `#332e1e` | Realce dorado tenue: fondo del ícono de cada sección |
+| `accent-foreground` | `#dcc788` | Ícono o texto sobre ese realce |
+| `destructive` | `#e05a4e` | Cancelar, eliminar, inasistencia |
+| `sidebar` | `#111111` | Barra lateral del dashboard, un paso más oscura que las tarjetas |
+
+Están implementados en [`apps/frontend/app/globals.css`](../apps/frontend/app/globals.css) como variables CSS bajo `.dark`, en `oklch` con el hex anotado al lado. **La fuente de verdad es ese archivo**; esta tabla lo documenta.
+
+El dorado es el único color con carga de marca y por eso se usa con cuentagotas: si todo lo importante es dorado, nada lo es. En una pantalla debería aparecer en la acción principal y en lo que está seleccionado, poco más.
+
+### 6.2 Qué puede cambiar el barbero y qué no
+
+La página pública es personalizable (5 paletas más una a medida, sección 3), pero eso **no** convierte cada pantalla en un lienzo libre:
+
+- Los 5 tokens que el negocio elige (`primary`, `primary_foreground`, `background`, `surface`, `foreground`) son un **subconjunto** de la tabla de arriba. El resto —bordes, texto secundario, deshabilitado— se derivan por opacidad y nunca se piden al usuario.
+- **Guardao Oscuro es la paleta 1** y el valor por defecto: un negocio que nunca entre a esa pantalla se ve exactamente como el mockup.
+- La personalización llega **solo a la página pública**. El dashboard, la agenda y el panel interno usan siempre Guardao Oscuro, sin excepción: son herramientas de trabajo, no la vitrina del negocio.
+- Nunca se escribe un color fijo en el código, ni en la página pública ni en el dashboard. Todo sale de variables CSS. Un `#0d0d0d` suelto es un bug: es el color que dejará de responder cuando el negocio cambie su tema.
+
+### 6.3 Tipografía
+
+Una sola familia para toda la interfaz: **Geist Sans**, ya configurada en el layout raíz. La personalización de temas no toca fuentes ni tamaños.
+
+| Uso | Tamaño | Peso |
+|---|---|---|
+| Nombre del negocio | 28–32 px | 600 |
+| Título de sección ("Reserva tu cita", "Fotos") | 18–20 px | 600 |
+| Subtítulo / paso numerado ("1. Selecciona tu servicio") | 15–16 px | 500 |
+| Cuerpo, etiquetas, opciones | 14 px | 400–500 |
+| Texto secundario: duración, dirección, descripciones | 12–13 px | 400 |
+| Precios | 14–16 px | 600 |
+
+`Geist Mono` queda reservada para lo que se lee carácter por carácter: código de referido, código de promoción, identificadores. No se usa como fuente decorativa.
+
+El logotipo de una barbería es una imagen que ella sube, no una fuente del sistema. El logo con serifas del mockup pertenece a ese negocio de ejemplo; ninguna pantalla debe depender de una fuente decorativa para verse bien.
+
+### 6.4 Formas y espaciado
+
+- **Radio base:** `0.625rem` (10 px), en la variable `--radius`. Las tarjetas grandes usan el escalón `xl`, los botones y campos el base, y los chips redondos (avatares, íconos de sección) van a círculo completo.
+- **Bordes:** siempre 1 px con el token `border`. La jerarquía se construye con el color del fondo, no con sombras: sobre un fondo casi negro una sombra no se ve, y apilar sombras solo ensucia.
+- **Espaciado:** múltiplos de 4 px, la escala de Tailwind. Padding de tarjeta 20–24 px, separación entre secciones 24–32 px.
+- **Ancho:** contenedor central con tope de ~1200 px. La reserva es de dos columnas en escritorio (formulario y resumen) y de una sola apilada en móvil, con el resumen al final.
+
+### 6.5 Componentes recurrentes
+
+Piezas que aparecen en más de una pantalla y se construyen una sola vez:
+
+| Componente | Cómo se ve |
+|---|---|
+| **Encabezado de sección** | Ícono en cuadrado redondeado con fondo `accent` e ícono `accent-foreground`, seguido del título |
+| **Tarjeta seleccionable** (servicio, barbero) | Fondo `surface`, borde `border`. Al elegirse: borde `primary` y palomita dorada en la esquina |
+| **Horario** | Píldora sobre `secondary`. El elegido se rellena de `primary` con texto `primary-foreground`. El ocupado se muestra en `muted` y deshabilitado, **nunca oculto** |
+| **Botón principal** | Relleno `primary`, texto `primary-foreground`, ancho completo dentro de su tarjeta. Uno solo por pantalla |
+| **Botón secundario** | Transparente con borde `border` y texto `foreground` (los de Instagram, TikTok y WhatsApp) |
+| **Panel de resumen** | Tarjeta con filas de ícono + etiqueta secundaria + valor principal, y el botón principal al pie |
+| **Tarjeta de producto** | Imagen arriba, nombre, descripción secundaria, precio en `primary` y botón de carrito |
+| **Enlace "ver todo"** | Texto `muted-foreground` con flecha a la derecha, alineado al borde derecho del encabezado |
+
+Los estados no son opcionales: cada control necesita su versión normal, seleccionada, deshabilitada y con foco visible. El foco usa el token `ring` (el mismo dorado), que es lo que permite recorrer la reserva con el teclado.
+
+### 6.6 Reglas que no se rompen
+
+- **Móvil primero.** La página pública se abre sobre todo desde el celular; el escritorio es el caso secundario, no al revés.
+- **Contraste legible.** El texto sobre dorado va oscuro, no blanco. Cuando el negocio arma su paleta a medida, la pantalla de configuración le advierte si la combinación deja el texto ilegible.
+- **Deshabilitado, no oculto.** Un horario ocupado se ve y no se puede pulsar. Esconderlo hace creer que la barbería no abre a esa hora.
+- **Español de Colombia, peso colombiano.** Montos enteros con separador de miles y sin decimales (`$25.000`), fechas en formato largo (`Viernes, 14 de agosto 2026`) y horas en 12 horas con `a. m.` / `p. m.`.
