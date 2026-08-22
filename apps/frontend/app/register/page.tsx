@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Store } from "lucide-react";
 
 import { HttpError, register } from "@/lib/api";
 import {
@@ -41,6 +41,17 @@ function FormField({
       ) : hint ? (
         <p className="text-xs text-muted-foreground">{hint}</p>
       ) : null}
+    </div>
+  );
+}
+
+function SectionHeading({ step, title }: { step: number; title: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-semibold text-accent-foreground">
+        {step}
+      </span>
+      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
     </div>
   );
 }
@@ -134,7 +145,10 @@ export default function RegisterPage() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Registra tu barbería</CardTitle>
+        <span className="mb-2 flex size-11 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+          <Store className="size-5" />
+        </span>
+        <CardTitle className="text-xl">Registra tu barbería</CardTitle>
         <CardDescription>
           Crea el negocio, su primera sede y tu cuenta de dueño. Al terminar quedas con la sesión
           iniciada.
@@ -150,7 +164,7 @@ export default function RegisterPage() {
 
           <fieldset disabled={submitting} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <h2 className="text-sm font-semibold text-foreground">Datos del negocio</h2>
+              <SectionHeading step={1} title="Datos del negocio" />
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField id="businessName" label="Nombre de la barbería" error={errors.businessName}>
                   <Input
@@ -183,7 +197,7 @@ export default function RegisterPage() {
             <Separator />
 
             <div className="flex flex-col gap-4">
-              <h2 className="text-sm font-semibold text-foreground">Datos de la primera sede</h2>
+              <SectionHeading step={2} title="Datos de la primera sede" />
               <FormField id="locationName" label="Nombre de la sede" error={errors.locationName}>
                 <Input
                   id="locationName"
@@ -221,7 +235,7 @@ export default function RegisterPage() {
             <Separator />
 
             <div className="flex flex-col gap-4">
-              <h2 className="text-sm font-semibold text-foreground">Datos del dueño</h2>
+              <SectionHeading step={3} title="Datos del dueño" />
               <FormField id="email" label="Correo" error={errors.email}>
                 <Input
                   id="email"
